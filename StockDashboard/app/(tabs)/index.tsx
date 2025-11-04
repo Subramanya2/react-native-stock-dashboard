@@ -53,6 +53,7 @@ const styles = StyleSheet.create({
   statusBar: {
     padding: 8,
     alignItems: 'center',
+    paddingTop: 40,
   },
   statusText: {
     color: 'white',
