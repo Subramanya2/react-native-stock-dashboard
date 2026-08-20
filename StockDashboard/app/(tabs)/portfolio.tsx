@@ -87,24 +87,26 @@ export default function PortfolioScreen() {
 
       {/* Net Worth Summary Card */}
       <View style={styles.netWorthCard}>
-        <View style={styles.netWorthHeaderRow}>
-          <Text style={styles.balanceLabel}>Total Net Worth</Text>
-          {totalCostBasis > 0 && (
-            <View style={[styles.pnlPill, { backgroundColor: isOverallPositive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)' }]}>
-              <Text style={[styles.pnlPillText, { color: isOverallPositive ? '#10b981' : '#ef4444' }]}>
-                {isOverallPositive ? '▲ +' : '▼ '}
-                ${Math.abs(totalPnlDollar).toFixed(2)} ({totalPnlPercent.toFixed(2)}%)
-              </Text>
-            </View>
-          )}
-        </View>
+        <Text style={styles.balanceLabel}>Total Net Worth</Text>
 
         <Text style={styles.netWorthValue}>
           ${totalNetWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </Text>
+
+        {/* Prominent All-Time Profit / Loss Indicator */}
+        {totalCostBasis > 0 && (
+          <View style={styles.pnlRow}>
+            <Text style={[styles.pnlMainText, { color: isOverallPositive ? '#10b981' : '#ef4444' }]}>
+              {isOverallPositive ? '▲ +' : '▼ '}
+              ${Math.abs(totalPnlDollar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({isOverallPositive ? '+' : ''}{totalPnlPercent.toFixed(2)}%)
+            </Text>
+            <Text style={styles.pnlSubLabel}>Total Unrealized Return</Text>
+          </View>
+        )}
+
         <View style={styles.subBalanceRow}>
-          <Text style={styles.subBalanceText}>Cash: ${cashBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-          <Text style={styles.subBalanceText}>Invested: ${totalHoldingsValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+          <Text style={styles.subBalanceText}>Available Cash: ${cashBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+          <Text style={styles.subBalanceText}>Total Invested: ${totalCostBasis.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
         </View>
 
         {/* Asset Allocation Multi-Color Bar */}
@@ -220,13 +222,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#374151',
   },
-  netWorthHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   balanceLabel: { color: '#9ca3af', fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5 },
-  pnlPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
-  pnlPillText: { fontSize: 12, fontWeight: 'bold' },
-  netWorthValue: { color: '#ffffff', fontSize: 32, fontWeight: 'bold', marginVertical: 4 },
-  subBalanceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
-  subBalanceText: { color: '#9ca3af', fontSize: 13 },
+  netWorthValue: { color: '#ffffff', fontSize: 34, fontWeight: 'bold', marginTop: 4 },
+  pnlRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2, marginBottom: 12 },
+  pnlMainText: { fontSize: 16, fontWeight: 'bold' },
+  pnlSubLabel: { color: '#6b7280', fontSize: 11, fontWeight: '500' },
+  subBalanceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, paddingTop: 10, borderTopWidth: 1, borderColor: '#374151' },
+  subBalanceText: { color: '#9ca3af', fontSize: 12 },
   allocationLabel: { color: '#d1d5db', fontSize: 12, fontWeight: '600', marginBottom: 6 },
   allocationBar: {
     height: 10,
