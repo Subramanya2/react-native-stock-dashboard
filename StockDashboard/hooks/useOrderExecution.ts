@@ -26,12 +26,17 @@ export const useOrderExecution = () => {
 
         if (newOrder.type === 'BUY') {
           if (existingIndex >= 0) {
+            const oldShares = updatedHoldings[existingIndex].shares;
+            const oldAvg = updatedHoldings[existingIndex].avgCost || newOrder.price;
+            const newShares = oldShares + newOrder.shares;
+            const newAvgCost = (oldShares * oldAvg + totalCost) / newShares;
             updatedHoldings[existingIndex] = {
               ...updatedHoldings[existingIndex],
-              shares: updatedHoldings[existingIndex].shares + newOrder.shares,
+              shares: newShares,
+              avgCost: parseFloat(newAvgCost.toFixed(2)),
             };
           } else {
-            updatedHoldings.push({ symbol: newOrder.symbol, shares: newOrder.shares });
+            updatedHoldings.push({ symbol: newOrder.symbol, shares: newOrder.shares, avgCost: newOrder.price });
           }
         } else if (newOrder.type === 'SELL') {
           if (existingIndex >= 0) {

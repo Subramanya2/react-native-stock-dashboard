@@ -12,11 +12,11 @@ const HOLDING_COLORS: Record<string, string> = {
   MSFT: '#8b5cf6',
 };
 
-const DEFAULT_PRICES: Record<string, number> = {
-  AAPL: 150.0,
-  GOOGL: 2800.0,
-  TSLA: 700.0,
-  MSFT: 300.0,
+const DEFAULT_AVG_COST: Record<string, number> = {
+  AAPL: 145.0,
+  GOOGL: 2700.0,
+  TSLA: 718.0,
+  MSFT: 294.0,
 };
 
 export default function PortfolioScreen() {
@@ -35,10 +35,10 @@ export default function PortfolioScreen() {
   const msftQuery = useQuery<StockUpdate>({ queryKey: getStockPriceQueryKey('MSFT'), queryFn: () => null as any, staleTime: Infinity });
 
   const livePrices: Record<string, number> = {
-    AAPL: aaplQuery.data?.price ?? DEFAULT_PRICES.AAPL,
-    GOOGL: googlQuery.data?.price ?? DEFAULT_PRICES.GOOGL,
-    TSLA: tslaQuery.data?.price ?? DEFAULT_PRICES.TSLA,
-    MSFT: msftQuery.data?.price ?? DEFAULT_PRICES.MSFT,
+    AAPL: aaplQuery.data?.price ?? 150.0,
+    GOOGL: googlQuery.data?.price ?? 2800.0,
+    TSLA: tslaQuery.data?.price ?? 700.0,
+    MSFT: msftQuery.data?.price ?? 300.0,
   };
 
   if (isLoading && !data) return <View style={styles.container}><Text style={styles.text}>Loading Portfolio...</Text></View>;
@@ -47,16 +47,36 @@ export default function PortfolioScreen() {
   const cashBalance = data?.cashBalance ?? 10000;
   const holdings = data?.holdings || [];
 
-  // Calculate live market valuation of holdings
+  // Calculate live market valuation & Cost Basis P/L for holdings
   let totalHoldingsValue = 0;
+  let totalCostBasis = 0;
+
   const holdingValuations = holdings.map((h: PortfolioHolding) => {
-    const currentPrice = livePrices[h.symbol] || DEFAULT_PRICES[h.symbol] || 100;
-    const value = h.shares * currentPrice;
-    totalHoldingsValue += value;
-    return { ...h, currentPrice, value };
+    const currentPrice = livePrices[h.symbol] || DEFAULT_AVG_COST[h.symbol] || 100;
+    const avgCost = h.avgCost ?? DEFAULT_AVG_COST[h.symbol] ?? currentPrice;
+    const totalSpent = h.shares * avgCost;
+    const currentValue = h.shares * currentPrice;
+    const pnlDollar = currentValue - totalSpent;
+    const pnlPercent = totalSpent > 0 ? (pnlDollar / totalSpent) * 100 : 0;
+
+    totalHoldingsValue += currentValue;
+    totalCostBasis += totalSpent;
+
+    return {
+      ...h,
+      avgCost,
+      totalSpent,
+      currentPrice,
+      currentValue,
+      pnlDollar,
+      pnlPercent,
+    };
   });
 
   const totalNetWorth = cashBalance + totalHoldingsValue;
+  const totalPnlDollar = totalHoldingsValue - totalCostBasis;
+  const totalPnlPercent = totalCostBasis > 0 ? (totalPnlDollar / totalCostBasis) * 100 : 0;
+  const isOverallPositive = totalPnlDollar >= 0;
 
   // Asset allocation percentages
   const cashPercent = totalNetWorth > 0 ? (cashBalance / totalNetWorth) * 100 : 100;
@@ -67,7 +87,18 @@ export default function PortfolioScreen() {
 
       {/* Net Worth Summary Card */}
       <View style={styles.netWorthCard}>
-        <Text style={styles.balanceLabel}>Total Net Worth</Text>
+        <View style={styles.netWorthHeaderRow}>
+          <Text style={styles.balanceLabel}>Total Net Worth</Text>
+          {totalCostBasis > 0 && (
+            <View style={[styles.pnlPill, { backgroundColor: isOverallPositive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)' }]}>
+              <Text style={[styles.pnlPillText, { color: isOverallPositive ? '#10b981' : '#ef4444' }]}>
+                {isOverallPositive ? '▲ +' : '▼ '}
+                ${Math.abs(totalPnlDollar).toFixed(2)} ({totalPnlPercent.toFixed(2)}%)
+              </Text>
+            </View>
+          )}
+        </View>
+
         <Text style={styles.netWorthValue}>
           ${totalNetWorth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </Text>
@@ -81,7 +112,7 @@ export default function PortfolioScreen() {
         <View style={styles.allocationBar}>
           <View style={[styles.barSegment, { width: `${cashPercent}%`, backgroundColor: HOLDING_COLORS.Cash }]} />
           {holdingValuations.map((h) => {
-            const pct = totalNetWorth > 0 ? (h.value / totalNetWorth) * 100 : 0;
+            const pct = totalNetWorth > 0 ? (h.currentValue / totalNetWorth) * 100 : 0;
             return (
               <View
                 key={h.symbol}
@@ -98,7 +129,7 @@ export default function PortfolioScreen() {
             <Text style={styles.legendText}>Cash ({cashPercent.toFixed(0)}%)</Text>
           </View>
           {holdingValuations.map((h) => {
-            const pct = totalNetWorth > 0 ? (h.value / totalNetWorth) * 100 : 0;
+            const pct = totalNetWorth > 0 ? (h.currentValue / totalNetWorth) * 100 : 0;
             return (
               <View key={h.symbol} style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: HOLDING_COLORS[h.symbol] || '#6b7280' }]} />
@@ -109,43 +140,70 @@ export default function PortfolioScreen() {
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Holdings & Actions</Text>
+      <Text style={styles.sectionTitle}>Holdings & Profit / Loss</Text>
 
       {holdings.length === 0 && (
         <Text style={styles.emptyText}>No active stock holdings.</Text>
       )}
 
-      {holdingValuations.map((holding) => (
-        <View key={holding.symbol} style={styles.holding}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.symbolText}>{holding.symbol}</Text>
-            <Text style={styles.sharesText}>
-              {holding.shares} Shares @ ${holding.currentPrice.toFixed(2)}
-            </Text>
-          </View>
+      {holdingValuations.map((holding) => {
+        const isPos = holding.pnlDollar >= 0;
+        const color = isPos ? '#10b981' : '#ef4444';
 
-          <View style={styles.valuationContainer}>
-            <Text style={styles.holdingValueText}>${holding.value.toFixed(2)}</Text>
-          </View>
+        return (
+          <View key={holding.symbol} style={styles.holdingCard}>
+            <View style={styles.holdingTopRow}>
+              <View>
+                <Text style={styles.symbolText}>{holding.symbol}</Text>
+                <Text style={styles.sharesText}>{holding.shares} Shares</Text>
+              </View>
 
-          <View style={styles.actionRow}>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.buyBtn]}
-              disabled={isPending}
-              onPress={() => executeOrder({ symbol: holding.symbol, type: 'BUY', shares: 1, price: holding.currentPrice })}
-            >
-              <Text style={styles.btnText}>+ Buy</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.sellBtn]}
-              disabled={isPending}
-              onPress={() => executeOrder({ symbol: holding.symbol, type: 'SELL', shares: 1, price: holding.currentPrice })}
-            >
-              <Text style={styles.btnText}>- Sell</Text>
-            </TouchableOpacity>
+              <View style={styles.pnlBadgeContainer}>
+                <Text style={[styles.pnlBadgeText, { color }]}>
+                  {isPos ? '+' : ''}${holding.pnlDollar.toFixed(2)} ({isPos ? '+' : ''}{holding.pnlPercent.toFixed(2)}%)
+                </Text>
+                <Text style={styles.pnlSubText}>Unrealized P/L</Text>
+              </View>
+            </View>
+
+            <View style={styles.holdingDetailsRow}>
+              <View style={styles.detailCol}>
+                <Text style={styles.detailLabel}>Avg Cost</Text>
+                <Text style={styles.detailValue}>${holding.avgCost.toFixed(2)}</Text>
+              </View>
+              <View style={styles.detailCol}>
+                <Text style={styles.detailLabel}>Total Spent</Text>
+                <Text style={styles.detailValue}>${holding.totalSpent.toFixed(2)}</Text>
+              </View>
+              <View style={styles.detailCol}>
+                <Text style={styles.detailLabel}>Live Price</Text>
+                <Text style={styles.detailValue}>${holding.currentPrice.toFixed(2)}</Text>
+              </View>
+              <View style={styles.detailCol}>
+                <Text style={styles.detailLabel}>Current Value</Text>
+                <Text style={styles.detailValue}>${holding.currentValue.toFixed(2)}</Text>
+              </View>
+            </View>
+
+            <View style={styles.holdingActionRow}>
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.buyBtn]}
+                disabled={isPending}
+                onPress={() => executeOrder({ symbol: holding.symbol, type: 'BUY', shares: 1, price: holding.currentPrice })}
+              >
+                <Text style={styles.btnText}>+ Buy 1 Share</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.sellBtn]}
+                disabled={isPending}
+                onPress={() => executeOrder({ symbol: holding.symbol, type: 'SELL', shares: 1, price: holding.currentPrice })}
+              >
+                <Text style={styles.btnText}>- Sell 1 Share</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      ))}
+        );
+      })}
     </ScrollView>
   );
 }
@@ -162,7 +220,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#374151',
   },
+  netWorthHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   balanceLabel: { color: '#9ca3af', fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5 },
+  pnlPill: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
+  pnlPillText: { fontSize: 12, fontWeight: 'bold' },
   netWorthValue: { color: '#ffffff', fontSize: 32, fontWeight: 'bold', marginVertical: 4 },
   subBalanceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   subBalanceText: { color: '#9ca3af', fontSize: 13 },
@@ -182,20 +243,34 @@ const styles = StyleSheet.create({
   legendText: { color: '#9ca3af', fontSize: 11 },
   sectionTitle: { fontSize: 18, fontWeight: '600', color: '#e5e7eb', marginBottom: 12 },
   emptyText: { color: '#9ca3af', fontStyle: 'italic', marginVertical: 12 },
-  holding: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
+  holdingCard: {
     backgroundColor: '#1f2937',
-    borderRadius: 10,
-    marginBottom: 10,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#374151',
   },
+  holdingTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   symbolText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
   sharesText: { color: '#9ca3af', fontSize: 12, marginTop: 2 },
-  valuationContainer: { paddingHorizontal: 10, alignItems: 'flex-end' },
-  holdingValueText: { color: '#10b981', fontSize: 15, fontWeight: 'bold' },
-  actionRow: { flexDirection: 'row', gap: 6, marginLeft: 8 },
-  actionBtn: { paddingHorizontal: 8, paddingVertical: 6, borderRadius: 6 },
+  pnlBadgeContainer: { alignItems: 'flex-end' },
+  pnlBadgeText: { fontSize: 15, fontWeight: 'bold' },
+  pnlSubText: { color: '#6b7280', fontSize: 10, marginTop: 1 },
+  holdingDetailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#374151',
+    marginBottom: 10,
+  },
+  detailCol: { alignItems: 'center' },
+  detailLabel: { color: '#9ca3af', fontSize: 10, marginBottom: 2 },
+  detailValue: { color: '#ffffff', fontSize: 12, fontWeight: '600' },
+  holdingActionRow: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
+  actionBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6 },
   buyBtn: { backgroundColor: '#059669' },
   sellBtn: { backgroundColor: '#dc2626' },
   btnText: { color: 'white', fontWeight: 'bold', fontSize: 11 },

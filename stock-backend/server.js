@@ -122,8 +122,8 @@ let userPortfolio = {
     userId: 'user123',
     cashBalance: 10000.00,
     holdings: [
-        { symbol: 'AAPL', shares: 10 },
-        { symbol: 'GOOGL', shares: 5 },
+        { symbol: 'AAPL', shares: 10, avgCost: 145.00 },
+        { symbol: 'GOOGL', shares: 5, avgCost: 2700.00 },
     ],
 };
 
@@ -150,9 +150,12 @@ app.post('/api/order', (req, res) => {
         userPortfolio.cashBalance -= totalCost;
         const existingHolding = userPortfolio.holdings.find(h => h.symbol === symbol);
         if (existingHolding) {
+            const oldCostTotal = existingHolding.shares * (existingHolding.avgCost || currentPrice);
+            const newCostTotal = oldCostTotal + totalCost;
             existingHolding.shares += shareCount;
+            existingHolding.avgCost = parseFloat((newCostTotal / existingHolding.shares).toFixed(2));
         } else {
-            userPortfolio.holdings.push({ symbol, shares: shareCount });
+            userPortfolio.holdings.push({ symbol, shares: shareCount, avgCost: currentPrice });
         }
     } else if (type === 'SELL') {
         const existingHolding = userPortfolio.holdings.find(h => h.symbol === symbol);

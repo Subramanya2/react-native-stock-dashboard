@@ -31,6 +31,7 @@ export interface OrderRequest {
 export interface PortfolioHolding {
     symbol: string;
     shares: number;
+    avgCost?: number;
 }
 
 export interface PortfolioResponse {
