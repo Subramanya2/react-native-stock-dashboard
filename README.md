@@ -12,6 +12,7 @@ A production-grade, real-time React Native (Expo) stock trading platform built w
 |---|---|---|
 | 🌐 **Live Web Application (Vercel)** | [finora-omega-wheat.vercel.app](https://finora-omega-wheat.vercel.app) | 🟢 Live |
 | ⚡ **Live Streaming Backend (Render)** | [finora-stock-backend.onrender.com](https://finora-stock-backend.onrender.com) | 🟢 Live |
+| 📱 **Android App APK (Direct Build)** | [Download Finora APK](https://drive.google.com/file/d/1yxJnN1bBFOuwCBPuGj5HxJJfQ2e3hcCY/view?usp=sharing) | 🟢 Available |
 
 ---
 
