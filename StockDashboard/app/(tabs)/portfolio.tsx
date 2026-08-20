@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPortfolio, PortfolioHolding } from '../../api/stockApi';
 import { useOrderExecution } from '../../hooks/useOrderExecution';
 import { getStockPriceQueryKey, StockUpdate } from '../../hooks/useMarketData';
+import { TradeModal } from '../../components/TradeModal';
 
 const HOLDING_COLORS: Record<string, string> = {
   Cash: '#10b981',
@@ -27,7 +29,26 @@ export default function PortfolioScreen() {
     refetchInterval: 60000,
   });
 
-  const { mutate: executeOrder, isPending } = useOrderExecution();
+  const [tradeModalState, setTradeModalState] = useState<{
+    visible: boolean;
+    symbol: string;
+    currentPrice: number;
+    initialType: 'BUY' | 'SELL';
+  }>({
+    visible: false,
+    symbol: 'AAPL',
+    currentPrice: 150.0,
+    initialType: 'BUY',
+  });
+
+  const openTradeModal = (symbol: string, currentPrice: number, type: 'BUY' | 'SELL') => {
+    setTradeModalState({
+      visible: true,
+      symbol,
+      currentPrice,
+      initialType: type,
+    });
+  };
 
   // Subscribe to live SSE prices for all holdings
   const aaplQuery = useQuery<StockUpdate>({ queryKey: getStockPriceQueryKey('AAPL'), queryFn: () => null as any, staleTime: Infinity });
@@ -194,15 +215,13 @@ export default function PortfolioScreen() {
             <View style={styles.holdingActionRow}>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.buyBtn]}
-                disabled={isPending}
-                onPress={() => executeOrder({ symbol: holding.symbol, type: 'BUY', shares: 1, price: holding.currentPrice })}
+                onPress={() => openTradeModal(holding.symbol, holding.currentPrice, 'BUY')}
               >
                 <Text style={styles.btnText}>Buy More</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.sellBtn]}
-                disabled={isPending}
-                onPress={() => executeOrder({ symbol: holding.symbol, type: 'SELL', shares: 1, price: holding.currentPrice })}
+                onPress={() => openTradeModal(holding.symbol, holding.currentPrice, 'SELL')}
               >
                 <Text style={styles.btnText}>Sell</Text>
               </TouchableOpacity>
@@ -211,6 +230,15 @@ export default function PortfolioScreen() {
         );
       })}
       </ScrollView>
+
+      {/* Trade Execution Modal */}
+      <TradeModal
+        visible={tradeModalState.visible}
+        symbol={tradeModalState.symbol}
+        currentPrice={tradeModalState.currentPrice}
+        initialType={tradeModalState.initialType}
+        onClose={() => setTradeModalState((prev) => ({ ...prev, visible: false }))}
+      />
     </SafeAreaView>
   );
 }
