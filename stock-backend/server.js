@@ -36,9 +36,15 @@ app.get('/sse/stocks', (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.flushHeaders();
 
-    console.log('Client connected to SSE');
+    console.log(`[${new Date().toLocaleTimeString()}] Client connected to SSE stream`);
+
+    // Heartbeat mechanism every 15 seconds to prevent browser/proxy timeouts
+    const heartbeatId = setInterval(() => {
+        res.write(': ping\n\n');
+    }, 15000);
 
     const intervalId = setInterval(() => {
         const symbols = Object.keys(stocks);
@@ -87,8 +93,9 @@ app.get('/sse/stocks', (req, res) => {
     }, 800);
 
     req.on('close', () => {
-        console.log('Client disconnected from SSE');
+        console.log(`[${new Date().toLocaleTimeString()}] Client disconnected from SSE stream`);
         clearInterval(intervalId);
+        clearInterval(heartbeatId);
         res.end();
     });
 });
@@ -175,7 +182,6 @@ app.post('/api/order', (req, res) => {
         portfolio: userPortfolio,
     });
 });
-
 
 app.listen(port, () => {
     console.log(`Mock Stock API server running at http://localhost:${port}`);
