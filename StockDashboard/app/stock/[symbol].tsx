@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStockHistory } from '../../api/stockApi';
 import { getStockPriceQueryKey, StockUpdate } from '../../hooks/useMarketData';
@@ -65,17 +66,24 @@ export default function StockDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Stack.Screen
-        options={{
-          title: `${stockSymbol} Detailed Analytics`,
-          headerStyle: { backgroundColor: '#141c2e' },
-          headerTintColor: '#ffffff',
-          headerTitleStyle: { fontWeight: 'bold', fontSize: 16 },
-        }}
-      />
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
 
-      <ScrollView style={styles.container} contentContainerStyle={[styles.contentContainer, { paddingBottom: 90 + insets.bottom }]}>
+      {/* Custom Safe-Area Aware Header Bar */}
+      <View style={[styles.topHeader, { paddingTop: Math.max(insets.top, 12) }]}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backBtn}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          activeOpacity={0.7}
+        >
+          <FontAwesome name="chevron-left" size={16} color="#ffffff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{stockSymbol} Detailed Analytics</Text>
+        <View style={styles.headerPlaceholder} />
+      </View>
+
+      <ScrollView style={styles.scrollContainer} contentContainerStyle={[styles.contentContainer, { paddingBottom: 90 + insets.bottom }]}>
         {/* Price Summary Header */}
         <View style={styles.headerBox}>
           <Text style={styles.symbolTitle}>{stockSymbol} Stock</Text>
@@ -135,12 +143,39 @@ export default function StockDetailScreen() {
         initialType={tradeType}
         onClose={() => setModalVisible(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0b0f17', maxWidth: 680, width: '100%', alignSelf: 'center' },
+  topHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#141c2e',
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1e293b',
+  },
+  backBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  headerPlaceholder: {
+    width: 34,
+  },
+  scrollContainer: { flex: 1 },
   contentContainer: { padding: 16 },
   headerBox: { marginBottom: 16 },
   symbolTitle: { color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: '600' },

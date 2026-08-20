@@ -118,10 +118,7 @@ function AppContent() {
           <Stack.Screen
             name="stock/[symbol]"
             options={{
-              headerShown: true,
-              headerStyle: { backgroundColor: '#141c2e' },
-              headerTintColor: '#ffffff',
-              headerTitleStyle: { fontWeight: 'bold', fontSize: 16 },
+              headerShown: false,
               contentStyle: { backgroundColor: '#0b0f17' },
             }}
           />
