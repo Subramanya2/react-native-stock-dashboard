@@ -104,9 +104,9 @@ export const TradeModal: React.FC<TradeModalProps> = ({
 
           {/* Price & Quantity inputs */}
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Execution Price</Text>
+            <Text style={styles.label}>Order Price</Text>
             {orderStyle === 'MARKET' ? (
-              <Text style={styles.readOnlyPrice}>${currentPrice.toFixed(2)} (Market)</Text>
+              <Text style={styles.readOnlyPrice}>${currentPrice.toFixed(2)} (Market Price)</Text>
             ) : (
               <TextInput
                 style={styles.input}
@@ -118,7 +118,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
           </View>
 
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Shares Quantity</Text>
+            <Text style={styles.label}>Number of Shares</Text>
             <View style={styles.counterRow}>
               <TouchableOpacity style={styles.counterBtn} onPress={handleDecrement}>
                 <Text style={styles.counterBtnText}>-</Text>
@@ -137,7 +137,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
 
           {/* Total calculation */}
           <View style={styles.summaryBox}>
-            <Text style={styles.summaryLabel}>Total Estimated Cost</Text>
+            <Text style={styles.summaryLabel}>Estimated Total</Text>
             <Text style={styles.summaryValue}>${totalCost.toFixed(2)}</Text>
           </View>
 
@@ -147,7 +147,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
             onPress={() => setSimulateError(!simulateError)}
           >
             <View style={[styles.checkbox, simulateError && styles.checkboxChecked]} />
-            <Text style={styles.checkboxLabel}>Simulate API Failure (Test Rollback)</Text>
+            <Text style={styles.checkboxLabel}>Simulate Order Rejection (Test Rollback)</Text>
           </TouchableOpacity>
 
           {notice && <Text style={styles.noticeText}>{notice}</Text>}

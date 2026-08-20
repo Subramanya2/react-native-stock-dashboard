@@ -60,7 +60,7 @@ const ConnectionStatus = ({ searchQuery, setSearchQuery }: { searchQuery: string
 
       {/* Market Volatility Mode Selector */}
       <View style={styles.sessionSegmentCard}>
-        <Text style={styles.sessionControlLabel}>MARKET VOLATILITY MODE</Text>
+        <Text style={styles.sessionControlLabel}>MARKET SESSION SIMULATION</Text>
         <View style={styles.sessionBar}>
           <TouchableOpacity
             style={[styles.sessionChip, session === 'REGULAR_HOURS' && styles.sessionChipActive]}

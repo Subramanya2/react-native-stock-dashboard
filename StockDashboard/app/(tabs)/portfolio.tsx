@@ -85,7 +85,7 @@ export default function PortfolioScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.title}>My Portfolio</Text>
+        <Text style={styles.title}>Portfolio Overview</Text>
 
       {/* Net Worth Hero Card */}
       <View style={styles.netWorthCard}>
@@ -104,13 +104,13 @@ export default function PortfolioScreen() {
                 ${Math.abs(totalPnlDollar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({isOverallPositive ? '+' : ''}{totalPnlPercent.toFixed(2)}%)
               </Text>
             </View>
-            <Text style={styles.pnlSubLabel}>Unrealized Return</Text>
+            <Text style={styles.pnlSubLabel}>Total Return</Text>
           </View>
         )}
 
         <View style={styles.subBalanceRow}>
-          <Text style={styles.subBalanceText}>Available Cash: <Text style={styles.highlightVal}>${cashBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text></Text>
-          <Text style={styles.subBalanceText}>Invested: <Text style={styles.highlightVal}>${totalCostBasis.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text></Text>
+          <Text style={styles.subBalanceText}>Cash Balance: <Text style={styles.highlightVal}>${cashBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text></Text>
+          <Text style={styles.subBalanceText}>Invested Capital: <Text style={styles.highlightVal}>${totalCostBasis.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text></Text>
         </View>
 
         {/* Asset Allocation Multi-Color Bar */}
