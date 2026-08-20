@@ -26,6 +26,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.dranzer_2201.finora",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.jpg",
         "backgroundColor": "#0b0f17"
@@ -46,6 +47,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "86a2a7a2-ae8c-4376-9f42-d56f93ce27e9"
+      }
     }
   }
 }
