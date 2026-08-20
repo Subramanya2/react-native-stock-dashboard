@@ -18,7 +18,6 @@
       "barStyle": "light-content"
     },
     "androidNavigationBar": {
-      "backgroundColor": "#0b0f17",
       "barStyle": "light-content"
     },
     "ios": {
@@ -29,8 +28,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0b0f17"
       },
-      "navigationBarColor": "#0b0f17",
-      "edgeToEdgeEnabled": false,
+      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
