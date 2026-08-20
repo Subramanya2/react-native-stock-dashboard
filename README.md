@@ -6,6 +6,15 @@ A production-grade, real-time React Native (Expo) stock trading platform built w
 
 ---
 
+## 🔗 Live Production Demos
+
+| Environment | URL | Status |
+|---|---|---|
+| 🌐 **Live Web Application (Vercel)** | [finora-omega-wheat.vercel.app](https://finora-omega-wheat.vercel.app) | 🟢 Live |
+| ⚡ **Live Streaming Backend (Render)** | [finora-stock-backend.onrender.com](https://finora-stock-backend.onrender.com) | 🟢 Live |
+
+---
+
 ## 🌟 Architecture & Features
 
 ### ⚡ Phase 1: MMKV Persistence & Offline Boot
@@ -84,10 +93,10 @@ npx expo start -c
 
 ## 🔑 Environment Variables
 
-| Variable | Scope | Required? | Description |
-|---|---|---|---|
-| `PORT` | `stock-backend` | Optional | Backend port (default `8080`). Render sets this automatically. |
-| `EXPO_PUBLIC_API_URL` | `StockDashboard` | **Yes (Prod)** | Live production backend URL (e.g. `https://your-backend.onrender.com`). |
+| Variable | Scope | Required? | Production Value | Description |
+|---|---|---|---|---|
+| `PORT` | `stock-backend` | Optional | `8080` | Backend port. Render sets this automatically. |
+| `EXPO_PUBLIC_API_URL` | `StockDashboard` | **Yes (Prod)** | `https://finora-stock-backend.onrender.com` | Live production backend URL. |
 
 ---
 
@@ -97,11 +106,13 @@ npx expo start -c
 1. Create a **Web Service** on [Render](https://dashboard.render.com/).
 2. Root Directory: `stock-backend`
 3. Build Command: `npm install` | Start Command: `npm start`
+4. Deployed Endpoint: `https://finora-stock-backend.onrender.com`
 
 ### ⚡ Deploy Frontend to Vercel
 1. Import repository on [Vercel](https://vercel.com/new).
 2. Root Directory: `StockDashboard`
-3. Environment Variable: `EXPO_PUBLIC_API_URL` = `https://your-backend.onrender.com`
+3. Environment Variable: `EXPO_PUBLIC_API_URL` = `https://finora-stock-backend.onrender.com`
+4. Deployed URL: `https://finora-omega-wheat.vercel.app`
 
 ### 📱 Build Android Preview APK
 ```bash
