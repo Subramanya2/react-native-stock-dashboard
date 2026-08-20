@@ -3,7 +3,8 @@ import { queryClient } from '../services/queryClient';
 import { clientPersister } from '../services/storage';
 import { useMarketData } from '../hooks/useMarketData';
 import { ToastNotification } from '../components/ToastNotification';
-import { useEffect, useRef } from 'react';
+import { AnimatedSplashScreen } from '../components/AnimatedSplashScreen';
+import { useEffect, useRef, useState } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -86,6 +87,7 @@ export default function RootLayout() {
 // This component lives INSIDE the QueryClientProvider
 // so it can safely call the useMarketData hook.
 function AppContent() {
+  const [showSplash, setShowSplash] = useState(true);
   const { setupSSE, cleanupSSE } = useMarketData();
   useEffectOnce(() => {
     setupSSE();
@@ -126,6 +128,9 @@ function AppContent() {
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         </Stack>
       </ThemeProvider>
+      {showSplash && (
+        <AnimatedSplashScreen onFinish={() => setShowSplash(false)} />
+      )}
     </View>
   );
 }
