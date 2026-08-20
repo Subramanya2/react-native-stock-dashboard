@@ -88,6 +88,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0b0f17',
+    maxWidth: 680,
+    width: '100%',
+    alignSelf: 'center',
   },
   listContainer: {
     flex: 1,

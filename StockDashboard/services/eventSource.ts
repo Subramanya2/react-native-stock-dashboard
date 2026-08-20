@@ -26,8 +26,10 @@ export class CustomEventSource {
       };
 
       this.nativeInstance.onerror = (err: any) => {
-        this.readyState = 2;
-        if (this.onerror) this.onerror(err);
+        if (this.nativeInstance && this.nativeInstance.readyState === 2) {
+          this.readyState = 2;
+          if (this.onerror) this.onerror(err);
+        }
       };
       return;
     }

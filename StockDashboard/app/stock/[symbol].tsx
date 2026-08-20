@@ -140,7 +140,7 @@ export default function StockDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0b0f17' },
+  container: { flex: 1, backgroundColor: '#0b0f17', maxWidth: 680, width: '100%', alignSelf: 'center' },
   contentContainer: { padding: 16 },
   headerBox: { marginBottom: 16 },
   symbolTitle: { color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: '600' },

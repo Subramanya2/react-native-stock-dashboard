@@ -111,7 +111,7 @@ export default function PortfolioScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0b0f17' },
+  container: { flex: 1, backgroundColor: '#0b0f17', maxWidth: 680, width: '100%', alignSelf: 'center' },
   contentContainer: { padding: 16, paddingBottom: 40 },
   title: { fontSize: 26, fontWeight: 'bold', color: '#ffffff', marginBottom: 16, marginTop: 8 },
   sectionTitle: { color: '#ffffff', fontSize: 18, fontWeight: 'bold', marginBottom: 12 },

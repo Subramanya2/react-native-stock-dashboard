@@ -87,9 +87,11 @@ export const useMarketData = () => {
 
         es.onerror = (error) => {
             console.error('SSE Error:', error);
-            setStatus('error');
-            es.close();
-            handleReconnect();
+            if (es.readyState === 2) {
+                setStatus('error');
+                es.close();
+                handleReconnect();
+            }
         };
     };
 
