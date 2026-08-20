@@ -88,6 +88,7 @@ function AppContent() {
   useEffectOnce(() => {
     setupSSE();
     if (Platform.OS === 'android') {
+      NavigationBar.setBackgroundColorAsync('#0b0f17').catch(() => {});
       NavigationBar.setButtonStyleAsync('light').catch(() => {});
     }
     return () => {
@@ -97,7 +98,7 @@ function AppContent() {
 
   return (
     <ThemeProvider value={customDarkTheme}>
-      <StatusBar style="light" animated translucent backgroundColor="transparent" />
+      <StatusBar style="light" backgroundColor="#0b0f17" />
       <ToastNotification />
       <Stack
         screenOptions={{
