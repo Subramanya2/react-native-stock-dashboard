@@ -49,19 +49,19 @@ export const NetWorthHeroCard: React.FC<NetWorthHeroCardProps> = ({
               {totalPnlPercent.toFixed(2)}%)
             </Text>
           </View>
-          <Text style={styles.pnlSubLabel}>Total Return</Text>
+          <Text style={styles.pnlSubLabel}>Total Profit / Loss</Text>
         </View>
       )}
 
       <View style={styles.subBalanceRow}>
         <Text style={styles.subBalanceText}>
-          Cash Balance:{' '}
+          Cash Available:{' '}
           <Text style={styles.highlightVal}>
             ${cashBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
         </Text>
         <Text style={styles.subBalanceText}>
-          Invested Capital:{' '}
+          Total Invested:{' '}
           <Text style={styles.highlightVal}>
             ${totalCostBasis.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
