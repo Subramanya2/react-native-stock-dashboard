@@ -9,7 +9,8 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
+import * as NavigationBar from 'expo-navigation-bar';
+import { Platform } from 'react-native';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -30,7 +31,7 @@ const customDarkTheme = {
   colors: {
     ...DarkTheme.colors,
     background: '#0b0f17',
-    card: '#0b0f17',
+    card: '#141c2e',
     text: '#ffffff',
     border: '#1e293b',
   },
@@ -85,6 +86,10 @@ function AppContent() {
   const { setupSSE, cleanupSSE } = useMarketData();
   useEffectOnce(() => {
     setupSSE();
+    if (Platform.OS === 'android') {
+      NavigationBar.setBackgroundColorAsync('#0b0f17').catch(() => {});
+      NavigationBar.setButtonStyleAsync('light').catch(() => {});
+    }
     return () => {
       cleanupSSE();
     };
@@ -92,7 +97,6 @@ function AppContent() {
 
   return (
     <ThemeProvider value={customDarkTheme}>
-      <StatusBar style="light" backgroundColor="#0b0f17" />
       <ToastNotification />
       <Stack
         screenOptions={{
