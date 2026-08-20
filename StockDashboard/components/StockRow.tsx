@@ -9,13 +9,32 @@ import { TradeModal } from './TradeModal';
 
 interface StockRowProps {
     symbol: string;
+    name?: string;
     openingPrice: number;
+    brandColor?: string;
 }
 
-const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
+const STOCK_NAMES: Record<string, string> = {
+    AAPL: 'Apple Inc.',
+    GOOGL: 'Alphabet Inc.',
+    TSLA: 'Tesla Inc.',
+    MSFT: 'Microsoft Corp.',
+};
+
+const STOCK_COLORS: Record<string, string> = {
+    AAPL: '#3b82f6',
+    GOOGL: '#f97316',
+    TSLA: '#eab308',
+    MSFT: '#8b5cf6',
+};
+
+const StockRow = ({ symbol, name, openingPrice, brandColor }: StockRowProps) => {
     const router = useRouter();
     const [modalVisible, setModalVisible] = useState(false);
     const [tradeType, setTradeType] = useState<'BUY' | 'SELL'>('BUY');
+
+    const displayName = name || STOCK_NAMES[symbol] || symbol;
+    const accentColor = brandColor || STOCK_COLORS[symbol] || '#6366f1';
 
     const { data: liveData } = useQuery<StockUpdate>({
         queryKey: getStockPriceQueryKey(symbol),
@@ -50,10 +69,10 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
         if (prevPriceRef.current !== price) {
             const isUp = price > prevPriceRef.current;
             prevPriceRef.current = price;
-            flashColor.value = isUp ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)';
+            flashColor.value = isUp ? 'rgba(16, 185, 129, 0.28)' : 'rgba(244, 63, 94, 0.28)';
             flashOpacity.value = withSequence(
                 withTiming(1, { duration: 150 }),
-                withTiming(0, { duration: 600 })
+                withTiming(0, { duration: 650 })
             );
         }
     }, [price]);
@@ -82,29 +101,20 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
             <TouchableOpacity style={styles.cardContainer} onPress={handleRowPress} activeOpacity={0.88}>
                 <Animated.View style={[styles.flashOverlay, animatedStyle]} pointerEvents="none" />
 
-                <View style={styles.row}>
-                    <View style={styles.leftContainer}>
-                        <View style={styles.symbolBadge}>
-                            <Text style={styles.symbol}>{symbol}</Text>
+                {/* Top Section: Avatar, Info, Sparkline, Price */}
+                <View style={styles.topSection}>
+                    <View style={styles.leftInfoGroup}>
+                        <View style={[styles.avatarCircle, { backgroundColor: `${accentColor}25`, borderColor: `${accentColor}50` }]}>
+                            <Text style={[styles.avatarText, { color: accentColor }]}>{symbol[0]}</Text>
                         </View>
-                        <View style={styles.actionRow}>
-                            <TouchableOpacity
-                                style={[styles.actionBtn, styles.buyBtn]}
-                                onPress={handleBuyPress}
-                            >
-                                <Text style={styles.actionBtnText}>+ Buy</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.actionBtn, styles.sellBtn]}
-                                onPress={handleSellPress}
-                            >
-                                <Text style={styles.actionBtnText}>- Sell</Text>
-                            </TouchableOpacity>
+                        <View style={styles.symbolGroup}>
+                            <Text style={styles.symbol}>{symbol}</Text>
+                            <Text style={styles.companyName} numberOfLines={1}>{displayName}</Text>
                         </View>
                     </View>
 
                     <View style={styles.sparklineContainer}>
-                        <SparklineChart data={activeSparkline} width={90} height={34} />
+                        <SparklineChart data={activeSparkline} width={85} height={32} />
                     </View>
 
                     <View style={styles.priceContainer}>
@@ -114,6 +124,19 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
                                 {isGain ? '▲ +' : '▼ '}{Math.abs(percentChange).toFixed(2)}%
                             </Text>
                         </View>
+                    </View>
+                </View>
+
+                {/* Bottom Section: Action Buttons */}
+                <View style={styles.cardFooter}>
+                    <Text style={styles.tapDetailText}>Tap card for detailed chart ↗</Text>
+                    <View style={styles.actionBtnGroup}>
+                        <TouchableOpacity style={[styles.actionBtn, styles.buyBtn]} onPress={handleBuyPress}>
+                            <Text style={styles.buyBtnText}>+ Buy</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.actionBtn, styles.sellBtn]} onPress={handleSellPress}>
+                            <Text style={styles.sellBtnText}>- Sell</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -132,67 +155,67 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
 const styles = StyleSheet.create({
     cardContainer: {
         backgroundColor: '#141c2e',
-        borderRadius: 14,
+        borderRadius: 16,
         marginHorizontal: 16,
-        marginBottom: 10,
+        marginBottom: 12,
         borderWidth: 1,
         borderColor: '#1e293b',
         overflow: 'hidden',
         position: 'relative',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.25,
+        shadowRadius: 5,
+        elevation: 3,
     },
     flashOverlay: {
         ...StyleSheet.absoluteFillObject,
     },
-    row: {
+    topSection: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 14,
-        paddingHorizontal: 14,
+        paddingHorizontal: 16,
+        paddingTop: 14,
+        paddingBottom: 10,
     },
-    leftContainer: {
-        width: 100,
+    leftInfoGroup: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        width: 125,
     },
-    symbolBadge: {
-        marginBottom: 4,
+    avatarCircle: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        borderWidth: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    avatarText: {
+        fontSize: 17,
+        fontWeight: 'bold',
+    },
+    symbolGroup: {
+        flex: 1,
     },
     symbol: {
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: 'bold',
-        color: '#f8fafc',
+        color: '#ffffff',
         letterSpacing: 0.5,
     },
-    actionRow: {
-        flexDirection: 'row',
-        marginTop: 4,
-        gap: 6,
-    },
-    actionBtn: {
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-        borderRadius: 6,
-    },
-    buyBtn: {
-        backgroundColor: '#059669',
-    },
-    sellBtn: {
-        backgroundColor: '#e11d48',
-    },
-    actionBtnText: {
-        color: '#ffffff',
-        fontSize: 10,
-        fontWeight: 'bold',
+    companyName: {
+        fontSize: 11,
+        color: '#94a3b8',
+        marginTop: 1,
     },
     sparklineContainer: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingHorizontal: 4,
+        paddingHorizontal: 2,
     },
     priceContainer: {
         alignItems: 'flex-end',
@@ -210,6 +233,46 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     changeText: {
+        fontSize: 11,
+        fontWeight: 'bold',
+    },
+    cardFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: '#0f172a',
+        borderTopWidth: 1,
+        borderTopColor: '#1e293b',
+    },
+    tapDetailText: {
+        color: '#64748b',
+        fontSize: 11,
+        fontWeight: '500',
+    },
+    actionBtnGroup: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    actionBtn: {
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+        borderRadius: 8,
+    },
+    buyBtn: {
+        backgroundColor: '#059669',
+    },
+    sellBtn: {
+        backgroundColor: '#e11d48',
+    },
+    buyBtnText: {
+        color: '#ffffff',
+        fontSize: 11,
+        fontWeight: 'bold',
+    },
+    sellBtnText: {
+        color: '#ffffff',
         fontSize: 11,
         fontWeight: 'bold',
     },

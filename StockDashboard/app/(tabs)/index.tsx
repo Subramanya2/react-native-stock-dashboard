@@ -5,12 +5,12 @@ import StockRow from '../../components/StockRow';
 import { useSSEStore, MarketSession } from '../../store/useSSEStore';
 import { updateMarketSession } from '../../api/stockApi';
 
-// Mock data.
+// Mock data with names and brand colors
 const WATCHLIST = [
-  { symbol: 'AAPL', openingPrice: 146.50 },
-  { symbol: 'GOOGL', openingPrice: 2750.00 },
-  { symbol: 'TSLA', openingPrice: 718.00 },
-  { symbol: 'MSFT', openingPrice: 294.00 },
+  { symbol: 'AAPL', name: 'Apple Inc.', openingPrice: 146.50, color: '#3b82f6' },
+  { symbol: 'GOOGL', name: 'Alphabet Inc.', openingPrice: 2750.00, color: '#f97316' },
+  { symbol: 'TSLA', name: 'Tesla Inc.', openingPrice: 718.00, color: '#eab308' },
+  { symbol: 'MSFT', name: 'Microsoft Corp.', openingPrice: 294.00, color: '#8b5cf6' },
 ];
 
 // Connection & Market Session status header
@@ -22,10 +22,10 @@ const ConnectionStatus = ({ searchQuery, setSearchQuery }: { searchQuery: string
 
   const getSessionBadge = () => {
     switch (session) {
-      case 'PRE_MARKET': return { label: '🟡 PRE-MARKET', color: '#f59e0b' };
-      case 'AFTER_HOURS': return { label: '🔵 AFTER-HOURS', color: '#3b82f6' };
-      case 'DEMO_LIVE': return { label: '🟢 24/7 DEMO', color: '#8b5cf6' };
-      default: return { label: '🟢 REGULAR SESSION', color: '#10b981' };
+      case 'PRE_MARKET': return { label: '🌅 PRE-MARKET', color: '#f59e0b' };
+      case 'AFTER_HOURS': return { label: '🌙 AFTER-HOURS', color: '#3b82f6' };
+      case 'DEMO_LIVE': return { label: '🚀 24/7 LIVE DEMO', color: '#8b5cf6' };
+      default: return { label: '⚡ REGULAR SESSION', color: '#10b981' };
     }
   };
 
@@ -44,54 +44,60 @@ const ConnectionStatus = ({ searchQuery, setSearchQuery }: { searchQuery: string
         </View>
       )}
 
+      {/* Main Header Title Row */}
       <View style={styles.headerTitleRow}>
-        <Text style={styles.headerTitle}>Watchlist</Text>
+        <View>
+          <Text style={styles.headerTitle}>Watchlist</Text>
+          <View style={styles.statusIndicator}>
+            <View style={[styles.dot, { backgroundColor: statusColor }]} />
+            <Text style={styles.statusText}>SSE Stream: {status.toUpperCase()}</Text>
+          </View>
+        </View>
+
         <View style={[styles.badgePill, { backgroundColor: badge.color }]}>
           <Text style={styles.badgeText}>{badge.label}</Text>
         </View>
       </View>
 
-      <View style={styles.topStatusRow}>
-        <View style={styles.statusIndicator}>
-          <View style={[styles.dot, { backgroundColor: statusColor }]} />
-          <Text style={styles.statusText}>Live Data Feed: {status.toUpperCase()}</Text>
-        </View>
-      </View>
+      {/* PROMINENT Market Session Segmented Selector */}
+      <View style={styles.sessionSegmentCard}>
+        <Text style={styles.sessionControlLabel}>MARKET VOLATILITY MODE</Text>
+        <View style={styles.sessionBar}>
+          <TouchableOpacity
+            style={[styles.sessionChip, session === 'REGULAR_HOURS' && styles.sessionChipActive]}
+            onPress={() => handleSessionChange('REGULAR_HOURS')}
+          >
+            <Text style={[styles.sessionChipText, session === 'REGULAR_HOURS' && styles.activeChipText]}>⚡ Regular</Text>
+          </TouchableOpacity>
 
-      {/* Session Switcher Pills */}
-      <View style={styles.sessionBar}>
-        <Text style={styles.sessionLabel}>Vol Mode:</Text>
-        <TouchableOpacity
-          style={[styles.sessionChip, session === 'REGULAR_HOURS' && styles.sessionChipActive]}
-          onPress={() => handleSessionChange('REGULAR_HOURS')}
-        >
-          <Text style={[styles.sessionChipText, session === 'REGULAR_HOURS' && styles.activeChipText]}>Regular</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.sessionChip, session === 'PRE_MARKET' && styles.sessionChipActive]}
-          onPress={() => handleSessionChange('PRE_MARKET')}
-        >
-          <Text style={[styles.sessionChipText, session === 'PRE_MARKET' && styles.activeChipText]}>Pre-Mkt</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.sessionChip, session === 'AFTER_HOURS' && styles.sessionChipActive]}
-          onPress={() => handleSessionChange('AFTER_HOURS')}
-        >
-          <Text style={[styles.sessionChipText, session === 'AFTER_HOURS' && styles.activeChipText]}>After-Hrs</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.sessionChip, session === 'DEMO_LIVE' && styles.sessionChipActive]}
-          onPress={() => handleSessionChange('DEMO_LIVE')}
-        >
-          <Text style={[styles.sessionChipText, session === 'DEMO_LIVE' && styles.activeChipText]}>24/7 Demo</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.sessionChip, session === 'PRE_MARKET' && styles.sessionChipActive]}
+            onPress={() => handleSessionChange('PRE_MARKET')}
+          >
+            <Text style={[styles.sessionChipText, session === 'PRE_MARKET' && styles.activeChipText]}>🌅 Pre-Mkt</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.sessionChip, session === 'AFTER_HOURS' && styles.sessionChipActive]}
+            onPress={() => handleSessionChange('AFTER_HOURS')}
+          >
+            <Text style={[styles.sessionChipText, session === 'AFTER_HOURS' && styles.activeChipText]}>🌙 After-Hrs</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.sessionChip, session === 'DEMO_LIVE' && styles.sessionChipActiveDemo]}
+            onPress={() => handleSessionChange('DEMO_LIVE')}
+          >
+            <Text style={[styles.sessionChipText, session === 'DEMO_LIVE' && styles.activeChipText]}>🚀 24/7 Demo</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Live Stock Search Input */}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="🔍 Search symbol (e.g. AAPL, TSLA)..."
+          placeholder="🔍 Search stock or ticker (e.g. AAPL, TSLA)..."
           placeholderTextColor="#64748b"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -112,8 +118,11 @@ export default function WatchlistScreen() {
 
   const filteredWatchlist = useMemo(() => {
     if (!searchQuery.trim()) return WATCHLIST;
-    return WATCHLIST.filter((item) =>
-      item.symbol.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    const query = searchQuery.trim().toLowerCase();
+    return WATCHLIST.filter(
+      (item) =>
+        item.symbol.toLowerCase().includes(query) ||
+        item.name.toLowerCase().includes(query)
     );
   }, [searchQuery]);
 
@@ -131,11 +140,13 @@ export default function WatchlistScreen() {
             renderItem={({ item }) => (
               <StockRow
                 symbol={item.symbol}
+                name={item.name}
                 openingPrice={item.openingPrice}
+                brandColor={item.color}
               />
             )}
             // @ts-ignore
-            estimatedItemSize={72}
+            estimatedItemSize={110}
             keyExtractor={(item) => item.symbol}
           />
         </View>
@@ -151,7 +162,7 @@ const styles = StyleSheet.create({
   },
   statusBar: {
     paddingHorizontal: 16,
-    paddingTop: 48,
+    paddingTop: 52,
     paddingBottom: 14,
     backgroundColor: '#141c2e',
     borderBottomWidth: 1,
@@ -161,21 +172,21 @@ const styles = StyleSheet.create({
   headerTitleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
+    alignItems: 'flex-start',
+    marginBottom: 14,
   },
   headerTitle: {
     color: '#ffffff',
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
   reconnectBanner: {
     backgroundColor: '#92400e',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 8,
-    marginBottom: 8,
+    marginBottom: 10,
     alignItems: 'center',
   },
   reconnectText: {
@@ -183,16 +194,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 'bold',
   },
-  topStatusRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
   statusIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginTop: 2,
   },
   dot: {
     width: 8,
@@ -205,42 +211,57 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   badgePill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
   },
   badgeText: {
     color: '#ffffff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  sessionSegmentCard: {
+    backgroundColor: '#0b0f17',
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#1e293b',
+    marginBottom: 12,
+  },
+  sessionControlLabel: {
+    color: '#64748b',
     fontSize: 10,
     fontWeight: 'bold',
+    letterSpacing: 0.8,
+    marginBottom: 8,
   },
   sessionBar: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 12,
-  },
-  sessionLabel: {
-    color: '#94a3b8',
-    fontSize: 11,
-    fontWeight: '600',
-    marginRight: 2,
+    gap: 6,
   },
   sessionChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    backgroundColor: '#0b0f17',
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    backgroundColor: '#141c2e',
     borderWidth: 1,
     borderColor: '#1e293b',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sessionChipActive: {
     backgroundColor: '#6366f1',
     borderColor: '#6366f1',
   },
+  sessionChipActiveDemo: {
+    backgroundColor: '#8b5cf6',
+    borderColor: '#8b5cf6',
+  },
   sessionChipText: {
     color: '#94a3b8',
-    fontSize: 10,
+    fontSize: 11,
+    fontWeight: '600',
   },
   activeChipText: {
     color: '#ffffff',
@@ -253,8 +274,8 @@ const styles = StyleSheet.create({
   searchInput: {
     backgroundColor: '#0b0f17',
     color: '#ffffff',
-    paddingHorizontal: 12,
-    paddingVertical: 9,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: 10,
     fontSize: 13,
     borderWidth: 1,
