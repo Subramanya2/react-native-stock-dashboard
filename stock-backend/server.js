@@ -56,16 +56,61 @@ app.get('/stocks/:symbol/history', (req, res) => {
     res.json({ symbol: req.params.symbol, history });
 });
 
+let userPortfolio = {
+    userId: 'user123',
+    cashBalance: 10000.00,
+    holdings: [
+        { symbol: 'AAPL', shares: 10 },
+        { symbol: 'GOOGL', shares: 5 },
+    ],
+};
+
 app.get('/portfolio', (req, res) => {
     // Simulate user portfolio
+    res.json(userPortfolio);
+});
+
+app.post('/api/order', (req, res) => {
+    const { symbol, type, shares, price, simulateError } = req.body;
+
+    if (simulateError) {
+        return res.status(400).json({ error: 'Simulated Order Execution Failure' });
+    }
+
+    const shareCount = Number(shares) || 1;
+    const currentPrice = price || stocks[symbol] || 100;
+    const totalCost = currentPrice * shareCount;
+
+    if (type === 'BUY') {
+        if (userPortfolio.cashBalance < totalCost) {
+            return res.status(400).json({ error: 'Insufficient cash balance' });
+        }
+        userPortfolio.cashBalance -= totalCost;
+        const existingHolding = userPortfolio.holdings.find(h => h.symbol === symbol);
+        if (existingHolding) {
+            existingHolding.shares += shareCount;
+        } else {
+            userPortfolio.holdings.push({ symbol, shares: shareCount });
+        }
+    } else if (type === 'SELL') {
+        const existingHolding = userPortfolio.holdings.find(h => h.symbol === symbol);
+        if (!existingHolding || existingHolding.shares < shareCount) {
+            return res.status(400).json({ error: 'Insufficient shares to sell' });
+        }
+        userPortfolio.cashBalance += totalCost;
+        existingHolding.shares -= shareCount;
+        userPortfolio.holdings = userPortfolio.holdings.filter(h => h.shares > 0);
+    } else {
+        return res.status(400).json({ error: 'Invalid order type' });
+    }
+
     res.json({
-        userId: 'user123',
-        holdings: [
-            { symbol: 'AAPL', shares: 10 },
-            { symbol: 'GOOGL', shares: 5 },
-        ],
+        success: true,
+        message: `Successfully executed ${type} order for ${shareCount} shares of ${symbol}`,
+        portfolio: userPortfolio,
     });
 });
+
 
 app.listen(port, () => {
     console.log(`Mock Stock API server running at http://localhost:${port}`);
