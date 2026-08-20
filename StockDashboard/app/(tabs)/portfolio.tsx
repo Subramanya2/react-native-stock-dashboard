@@ -178,15 +178,15 @@ export default function PortfolioScreen() {
                 <Text style={styles.detailValue}>${holding.avgCost.toFixed(2)}</Text>
               </View>
               <View style={styles.detailCol}>
-                <Text style={styles.detailLabel}>Total Spent</Text>
+                <Text style={styles.detailLabel}>Cost Basis</Text>
                 <Text style={styles.detailValue}>${holding.totalSpent.toFixed(2)}</Text>
               </View>
               <View style={styles.detailCol}>
-                <Text style={styles.detailLabel}>Live Price</Text>
+                <Text style={styles.detailLabel}>Market Price</Text>
                 <Text style={styles.detailValue}>${holding.currentPrice.toFixed(2)}</Text>
               </View>
               <View style={styles.detailCol}>
-                <Text style={styles.detailLabel}>Current Value</Text>
+                <Text style={styles.detailLabel}>Market Value</Text>
                 <Text style={styles.detailValue}>${holding.currentValue.toFixed(2)}</Text>
               </View>
             </View>

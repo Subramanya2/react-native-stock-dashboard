@@ -155,19 +155,19 @@ export default function StockDetailScreen() {
         <Text style={styles.sectionHeader}>Key Statistics</Text>
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Open Price</Text>
+            <Text style={styles.statLabel}>Open</Text>
             <Text style={styles.statValue}>${baseOpenPrice.toFixed(2)}</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Day High</Text>
+            <Text style={styles.statLabel}>High</Text>
             <Text style={styles.statValue}>${(currentPrice * 1.03).toFixed(2)}</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Day Low</Text>
+            <Text style={styles.statLabel}>Low</Text>
             <Text style={styles.statValue}>${(currentPrice * 0.97).toFixed(2)}</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>52W Range</Text>
+            <Text style={styles.statLabel}>52-Wk Range</Text>
             <Text style={styles.statValue}>$110 - ${(currentPrice * 1.25).toFixed(2)}</Text>
           </View>
           <View style={styles.statCard}>
