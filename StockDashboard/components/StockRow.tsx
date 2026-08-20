@@ -22,7 +22,6 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
         queryFn: () => null as any,
         staleTime: Infinity,
         gcTime: Infinity,
-        enabled: false,
     });
 
     const { data: sparklineTicks = [] } = useQuery<number[]>({
@@ -30,7 +29,6 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
         queryFn: () => [],
         staleTime: Infinity,
         gcTime: Infinity,
-        enabled: false,
     });
 
     const price = liveData?.price ?? openingPrice;

@@ -32,11 +32,12 @@ export class CustomEventSource {
       return;
     }
 
-    // React Native XMLHttpRequest chunked stream implementation
+    // React Native XMLHttpRequest chunked stream implementation with stream buffering
     try {
       const xhr = new XMLHttpRequest();
       this.xhr = xhr;
       let seenBytes = 0;
+      let buffer = '';
 
       xhr.open('GET', this.url);
       xhr.setRequestHeader('Accept', 'text/event-stream');
@@ -53,9 +54,13 @@ export class CustomEventSource {
             const responseText = xhr.responseText || '';
             const newData = responseText.substring(seenBytes);
             seenBytes = responseText.length;
+            buffer += newData;
 
-            const blocks = newData.split('\n\n');
-            for (const block of blocks) {
+            const parts = buffer.split('\n\n');
+            // Retain incomplete trailing block in buffer for the next chunk
+            buffer = parts.pop() || '';
+
+            for (const block of parts) {
               if (!block.trim()) continue;
               const lines = block.split('\n');
               let eventName = 'message';

@@ -24,7 +24,6 @@ export default function StockDetailScreen() {
     queryKey: getStockPriceQueryKey(stockSymbol),
     queryFn: () => null as any,
     staleTime: Infinity,
-    enabled: false,
   });
 
   // Historical data query
