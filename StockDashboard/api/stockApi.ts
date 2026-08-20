@@ -2,7 +2,13 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 export const getApiBaseUrl = (): string => {
-    // 1. Check if running inside Expo Go on physical device or emulator
+    // 1. Web environment: match active browser hostname on port 8080
+    if (Platform.OS === 'web') {
+        const hostname = typeof window !== 'undefined' && window.location?.hostname ? window.location.hostname : 'localhost';
+        return `http://${hostname}:8080`;
+    }
+
+    // 2. Check if running inside Expo Go on physical device or emulator
     const hostUri = Constants.expoConfig?.hostUri || (Constants as any).experienceUrl;
     if (hostUri) {
         const hostIp = hostUri.split(':')[0];
@@ -11,12 +17,12 @@ export const getApiBaseUrl = (): string => {
         }
     }
 
-    // 2. Android Emulator fallback
+    // 3. Android Emulator fallback
     if (Platform.OS === 'android') {
         return 'http://10.0.2.2:8080';
     }
 
-    // 3. Web or iOS Simulator default
+    // 4. iOS Simulator default
     return 'http://localhost:8080';
 };
 

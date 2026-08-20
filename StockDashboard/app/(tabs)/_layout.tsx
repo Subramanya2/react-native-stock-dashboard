@@ -5,50 +5,52 @@ import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
-// Custom Floating Glassmorphic Bottom Tab Bar with Middle Separator
+// Custom Floating Glassmorphic Bottom Tab Bar with Dead-Center Web & Mobile Alignment
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.tabBarContainer, { marginBottom: Math.max(10, insets.bottom) }]}>
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const label = options.title !== undefined ? options.title : route.name;
-        const isFocused = state.index === index;
+    <View style={[styles.tabBarWrapper, { bottom: Math.max(10, insets.bottom) }]}>
+      <View style={styles.tabBarInner}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label = options.title !== undefined ? options.title : route.name;
+          const isFocused = state.index === index;
 
-        const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
-          }
-        };
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
 
-        const iconName = route.name === 'index' ? 'line-chart' : 'pie-chart';
-        const color = isFocused ? '#6366f1' : '#64748b';
+          const iconName = route.name === 'index' ? 'line-chart' : 'pie-chart';
+          const color = isFocused ? '#6366f1' : '#64748b';
 
-        return (
-          <React.Fragment key={route.key}>
-            {index > 0 && <View style={styles.verticalSeparator} />}
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : {}}
-              onPress={onPress}
-              style={[styles.tabItem, isFocused && styles.tabItemActive]}
-              activeOpacity={0.7}
-            >
-              <FontAwesome name={iconName} size={18} color={color} style={styles.tabIcon} />
-              <Text style={[styles.tabLabel, { color }, isFocused && styles.tabLabelActive]}>
-                {label}
-              </Text>
-            </TouchableOpacity>
-          </React.Fragment>
-        );
-      })}
+          return (
+            <React.Fragment key={route.key}>
+              {index > 0 && <View style={styles.verticalSeparator} />}
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityState={isFocused ? { selected: true } : {}}
+                onPress={onPress}
+                style={[styles.tabItem, isFocused && styles.tabItemActive]}
+                activeOpacity={0.7}
+              >
+                <FontAwesome name={iconName} size={18} color={color} style={styles.tabIcon} />
+                <Text style={[styles.tabLabel, { color }, isFocused && styles.tabLabelActive]}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            </React.Fragment>
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -78,13 +80,17 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  tabBarContainer: {
+  tabBarWrapper: {
     position: 'absolute',
-    bottom: 0,
-    left: 16,
-    right: 16,
-    maxWidth: 500,
-    alignSelf: 'center',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  tabBarInner: {
+    width: '92%',
+    maxWidth: 480,
     backgroundColor: '#141c2e',
     borderRadius: 20,
     height: 60,
