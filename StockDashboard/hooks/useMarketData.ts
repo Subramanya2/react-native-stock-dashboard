@@ -9,6 +9,9 @@ import { getApiBaseUrl } from '../api/stockApi';
 export interface StockUpdate {
     symbol: string;
     price: number;
+    openingPrice?: number;
+    change?: number;
+    percentChange?: number;
     timestamp: string;
 }
 

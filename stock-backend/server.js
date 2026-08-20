@@ -7,9 +7,19 @@ const port = 8080;
 app.use(cors());
 app.use(express.json());
 
-// In-memory data
+// In-memory stock data with opening prices for realistic percentage calculation
+let openingPrices = {
+    'AAPL': 146.50,
+    'GOOGL': 2750.00,
+    'TSLA': 718.00,
+    'MSFT': 294.00,
+};
+
 let stocks = {
-    'AAPL': 150.00, 'GOOGL': 2800.00, 'TSLA': 700.00, 'MSFT': 300.00,
+    'AAPL': 150.00,
+    'GOOGL': 2800.00,
+    'TSLA': 700.00,
+    'MSFT': 300.00,
 };
 
 // --- Part 1: SSE Endpoint ---
@@ -22,14 +32,27 @@ app.get('/sse/stocks', (req, res) => {
     console.log('Client connected to SSE');
 
     const intervalId = setInterval(() => {
-        // Simulate realistic market data with volatility
-        const symbol = Object.keys(stocks)[Math.floor(Math.random() * Object.keys(stocks).length)];
-        const change = (Math.random() - 0.5) * 2; // -1 to +1
-        stocks[symbol] = Math.max(50, stocks[symbol] + change); // Ensure price doesn't go too low
+        // Pick a random stock and simulate realistic percentage-based market volatility (±0.4% to ±1.2%)
+        const symbols = Object.keys(stocks);
+        const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+        const openPrice = openingPrices[symbol];
+
+        // Percentage drift between -1.2% and +1.2%
+        const percentDrift = (Math.random() - 0.49) * 0.024;
+        const priceChange = stocks[symbol] * percentDrift;
+
+        stocks[symbol] = Math.max(20, stocks[symbol] + priceChange);
+
+        const currentPrice = parseFloat(stocks[symbol].toFixed(2));
+        const totalChange = currentPrice - openPrice;
+        const percentChange = (totalChange / openPrice) * 100;
 
         const data = {
             symbol: symbol,
-            price: parseFloat(stocks[symbol].toFixed(2)),
+            price: currentPrice,
+            openingPrice: openPrice,
+            change: parseFloat(totalChange.toFixed(2)),
+            percentChange: parseFloat(percentChange.toFixed(2)),
             timestamp: new Date().toISOString(),
         };
 
@@ -37,7 +60,7 @@ app.get('/sse/stocks', (req, res) => {
         res.write(`id: ${new Date().getTime()}\n`);
         res.write(`event: stockUpdate\n`);
         res.write(`data: ${JSON.stringify(data)}\n\n`);
-    }, 1000); // Send an update every second
+    }, 800); // Send update every 800ms for lively UI streaming
 
     req.on('close', () => {
         console.log('Client disconnected from SSE');

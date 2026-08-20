@@ -5,10 +5,10 @@ import { useSSEStore } from '../../store/useSSEStore';
 
 // Mock data.
 const WATCHLIST = [
-  { symbol: 'AAPL', openingPrice: 150.00 },
-  { symbol: 'GOOGL', openingPrice: 2800.00 },
-  { symbol: 'TSLA', openingPrice: 700.00 },
-  { symbol: 'MSFT', openingPrice: 300.00 },
+  { symbol: 'AAPL', openingPrice: 146.50 },
+  { symbol: 'GOOGL', openingPrice: 2750.00 },
+  { symbol: 'TSLA', openingPrice: 718.00 },
+  { symbol: 'MSFT', openingPrice: 294.00 },
 ];
 
 // Status bar to show connection

@@ -34,8 +34,9 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
     });
 
     const price = liveData?.price ?? openingPrice;
-    const change = price - openingPrice;
-    const percentChange = (change / openingPrice) * 100;
+    const baseOpen = liveData?.openingPrice ?? openingPrice;
+    const change = liveData?.change ?? (price - baseOpen);
+    const percentChange = liveData?.percentChange ?? ((change / baseOpen) * 100);
     const color = change > 0 ? '#10b981' : change < 0 ? '#ef4444' : '#6b7280';
 
     // Reanimated Flash Highlight
