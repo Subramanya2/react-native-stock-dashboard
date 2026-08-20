@@ -37,6 +37,8 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
     const percentChange = liveData?.percentChange ?? ((change / baseOpen) * 100);
     const color = change > 0 ? '#10b981' : change < 0 ? '#ef4444' : '#6b7280';
 
+    const activeSparkline = liveData?.history?.slice(-20) || (sparklineTicks.length > 0 ? sparklineTicks : [baseOpen, (baseOpen + price) / 2, price]);
+
     // Reanimated Flash Highlight
     const prevPriceRef = useRef<number>(price);
     const flashOpacity = useSharedValue(0);
@@ -98,7 +100,7 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
                     </View>
 
                     <View style={styles.sparklineContainer}>
-                        <SparklineChart data={sparklineTicks} width={85} height={32} />
+                        <SparklineChart data={activeSparkline} width={85} height={32} />
                     </View>
 
                     <View style={styles.priceContainer}>

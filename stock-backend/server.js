@@ -7,19 +7,12 @@ const port = 8080;
 app.use(cors());
 app.use(express.json());
 
-// In-memory stock data with opening prices for realistic percentage calculation
-let openingPrices = {
-    'AAPL': 146.50,
-    'GOOGL': 2750.00,
-    'TSLA': 718.00,
-    'MSFT': 294.00,
-};
-
-let stocks = {
-    'AAPL': 150.00,
-    'GOOGL': 2800.00,
-    'TSLA': 700.00,
-    'MSFT': 300.00,
+// Initialize smooth 30-tick historical price series for each stock
+let stockHistory = {
+    'AAPL': Array.from({ length: 30 }, (_, i) => parseFloat((146.50 + (i * 0.12) + (Math.sin(i) * 0.5)).toFixed(2))),
+    'GOOGL': Array.from({ length: 30 }, (_, i) => parseFloat((2750.00 + (i * 1.66) + (Math.cos(i) * 5.0)).toFixed(2))),
+    'TSLA': Array.from({ length: 30 }, (_, i) => parseFloat((718.00 - (i * 0.60) + (Math.sin(i) * 3.0)).toFixed(2))),
+    'MSFT': Array.from({ length: 30 }, (_, i) => parseFloat((294.00 + (i * 0.20) + (Math.cos(i) * 0.8)).toFixed(2))),
 };
 
 // --- Part 1: SSE Endpoint ---
@@ -47,12 +40,20 @@ app.get('/sse/stocks', (req, res) => {
         const totalChange = currentPrice - openPrice;
         const percentChange = (totalChange / openPrice) * 100;
 
+        // Push latest live tick into stockHistory buffer
+        if (!stockHistory[symbol]) stockHistory[symbol] = [];
+        stockHistory[symbol].push(currentPrice);
+        if (stockHistory[symbol].length > 30) {
+            stockHistory[symbol].shift();
+        }
+
         const data = {
             symbol: symbol,
             price: currentPrice,
             openingPrice: openPrice,
             change: parseFloat(totalChange.toFixed(2)),
             percentChange: parseFloat(percentChange.toFixed(2)),
+            history: stockHistory[symbol],
             timestamp: new Date().toISOString(),
         };
 
@@ -71,12 +72,13 @@ app.get('/sse/stocks', (req, res) => {
 
 // --- Part 2: REST Endpoints ---
 app.get('/stocks/:symbol/history', (req, res) => {
-    // Simulate historical data
-    const history = Array.from({ length: 30 }, (_, i) => ({
-        date: `2025-10-${30 - i}`,
-        price: stocks[req.params.symbol] - (i * (Math.random() - 0.5)),
+    const symbol = req.params.symbol;
+    const priceSeries = stockHistory[symbol] || [stocks[symbol] || 100];
+    const history = priceSeries.map((price, i) => ({
+        date: `Tick-${i + 1}`,
+        price,
     }));
-    res.json({ symbol: req.params.symbol, history });
+    res.json({ symbol, history });
 });
 
 let userPortfolio = {

@@ -12,6 +12,7 @@ export interface StockUpdate {
     openingPrice?: number;
     change?: number;
     percentChange?: number;
+    history?: number[];
     timestamp: string;
 }
 
@@ -53,12 +54,15 @@ export const useMarketData = () => {
                     update
                 );
 
-                // 2. Maintain a sliding window array (max 20 data points) for sparkline
+                // 2. Sync sparkline chart array directly with the live history stream
                 queryClient.setQueryData<number[]>(
                     getStockSparklineQueryKey(update.symbol),
-                    (old = []) => {
-                        const updated = [...old, update.price];
-                        return updated.slice(-20);
+                    () => {
+                        if (update.history && update.history.length > 0) {
+                            return update.history.slice(-20);
+                        }
+                        const old = queryClient.getQueryData<number[]>(getStockSparklineQueryKey(update.symbol)) || [];
+                        return [...old, update.price].slice(-20);
                     }
                 );
 
