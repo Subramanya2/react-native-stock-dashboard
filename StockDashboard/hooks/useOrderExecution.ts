@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { executeOrder, OrderRequest, PortfolioResponse } from '../api/stockApi';
+import { useToastStore } from '../store/useToastStore';
 
 export const useOrderExecution = () => {
   const queryClient = useQueryClient();
@@ -64,11 +65,22 @@ export const useOrderExecution = () => {
       // 4. Return context containing the snapshot
       return { previousPortfolio };
     },
-    onError: (err, newOrder, context) => {
+    onSuccess: (data, newOrder) => {
+      const verb = newOrder.type === 'BUY' ? 'Bought' : 'Sold';
+      useToastStore.getState().showToast(
+        `✅ Order Executed: ${verb} ${newOrder.shares} ${newOrder.symbol} @ $${newOrder.price.toFixed(2)}`,
+        'success'
+      );
+    },
+    onError: (err: any, newOrder, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousPortfolio) {
         queryClient.setQueryData(['portfolio'], context.previousPortfolio);
       }
+      useToastStore.getState().showToast(
+        `❌ Order Failed: ${err.message || 'Execution Error'} (Rolled back)`,
+        'error'
+      );
     },
     onSettled: () => {
       // Always refetch after error or success to ensure server state sync
