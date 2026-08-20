@@ -38,3 +38,6 @@ StockDashboard/android/
 *.mobileprovision
 *.pem
 .DS_Store
+
+# Personal notes
+self.md
