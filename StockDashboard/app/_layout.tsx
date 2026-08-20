@@ -8,6 +8,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -22,7 +23,19 @@ export const unstable_settings = {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// Simple utility to run an effect only once
+// Custom Dark Navigation Theme to eliminate white flash transitions
+const customDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: '#0b0f17',
+    card: '#141c2e',
+    text: '#ffffff',
+    border: '#1e293b',
+  },
+};
+
+// Utility to run an effect only once
 const useEffectOnce = (effect: () => (() => void) | void) => {
   const destroyFunc = useRef<(() => void) | void>(undefined);
   const effectCalled = useRef(false);
@@ -68,7 +81,6 @@ export default function RootLayout() {
 // This component lives INSIDE the QueryClientProvider
 // so it can safely call the useMarketData hook.
 function AppContent() {
-  // ▼▼▼ THE HOOK IS CALLED HERE ▼▼▼
   const { setupSSE, cleanupSSE } = useMarketData();
   useEffectOnce(() => {
     setupSSE();
@@ -76,21 +88,35 @@ function AppContent() {
       cleanupSSE();
     };
   });
-  // ▲▲▲ HOOK ENDS ▲▲▲
 
-  // navigation stack
   return (
-    <>
+    <ThemeProvider value={customDarkTheme}>
       <ToastNotification />
-      <Stack>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: '#0b0f17' },
+          animation: 'slide_from_right',
+        }}
+      >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="stock/[symbol]"
+          options={{
+            headerShown: true,
+            headerStyle: { backgroundColor: '#141c2e' },
+            headerTintColor: '#ffffff',
+            headerTitleStyle: { fontWeight: 'bold', fontSize: 16 },
+            contentStyle: { backgroundColor: '#0b0f17' },
+          }}
+        />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
-    </>
+    </ThemeProvider>
   );
 }
 
-// This component's ONLY job is to set up the providers.
+// Set up the persistence query client provider.
 function RootLayoutNav() {
   return (
     <PersistQueryClientProvider
