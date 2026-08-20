@@ -13,6 +13,9 @@ export interface StockUpdate {
     change?: number;
     percentChange?: number;
     history?: number[];
+    session?: 'REGULAR_HOURS' | 'PRE_MARKET' | 'AFTER_HOURS' | 'DEMO_LIVE';
+    exchange?: string;
+    marketOpen?: boolean;
     timestamp: string;
 }
 
@@ -22,7 +25,7 @@ export const getStockSparklineQueryKey = (symbol: string) => ['stock-sparkline',
 
 export const useMarketData = () => {
     const queryClient = useQueryClient();
-    const { setStatus } = useSSEStore.getState();
+    const { setStatus, setSession } = useSSEStore.getState();
     const eventSourceRef = useRef<CustomEventSource | null>(null);
     const reconnectAttempt = useRef(0);
     const maxReconnectDelay = 30000; // 30 seconds
@@ -47,6 +50,10 @@ export const useMarketData = () => {
         es.addEventListener('stockUpdate', (event) => {
             if (event.data) {
                 const update = JSON.parse(event.data) as StockUpdate;
+
+                if (update.session) {
+                    setSession(update.session);
+                }
 
                 // 1. Update the 'live price' query data directly.
                 queryClient.setQueryData(

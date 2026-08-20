@@ -1,7 +1,8 @@
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import StockRow from '../../components/StockRow';
-import { useSSEStore } from '../../store/useSSEStore';
+import { useSSEStore, MarketSession } from '../../store/useSSEStore';
+import { updateMarketSession } from '../../api/stockApi';
 
 // Mock data.
 const WATCHLIST = [
@@ -11,16 +12,63 @@ const WATCHLIST = [
   { symbol: 'MSFT', openingPrice: 294.00 },
 ];
 
-// Status bar to show connection
+// Connection & Market Session status header
 const ConnectionStatus = () => {
   const status = useSSEStore((state) => state.status);
-  const color = status === 'connected' ? '#10b981' : '#ef4444';
+  const session = useSSEStore((state) => state.session);
+
+  const statusColor = status === 'connected' ? '#10b981' : '#ef4444';
+
+  const getSessionBadge = () => {
+    switch (session) {
+      case 'PRE_MARKET': return { label: '🟡 PRE-MARKET', color: '#f59e0b' };
+      case 'AFTER_HOURS': return { label: '🔵 AFTER-HOURS', color: '#3b82f6' };
+      case 'DEMO_LIVE': return { label: '🟢 24/7 DEMO', color: '#8b5cf6' };
+      default: return { label: '🟢 REGULAR SESSION', color: '#10b981' };
+    }
+  };
+
+  const badge = getSessionBadge();
+
+  const handleSessionChange = (newSession: MarketSession) => {
+    updateMarketSession(newSession).catch((err) => console.error('Failed to change session:', err));
+  };
 
   return (
-    <View style={[styles.statusBar, { backgroundColor: color }]}>
-      <Text style={styles.statusText}>
-        Market Data: {status.toUpperCase()}
-      </Text>
+    <View style={styles.statusBar}>
+      <View style={styles.topStatusRow}>
+        <View style={styles.statusIndicator}>
+          <View style={[styles.dot, { backgroundColor: statusColor }]} />
+          <Text style={styles.statusText}>Stream: {status.toUpperCase()}</Text>
+        </View>
+
+        <View style={[styles.badgePill, { backgroundColor: badge.color }]}>
+          <Text style={styles.badgeText}>{badge.label}</Text>
+        </View>
+      </View>
+
+      {/* Session Switcher Pills */}
+      <View style={styles.sessionBar}>
+        <Text style={styles.sessionLabel}>Mode:</Text>
+        <TouchableOpacity
+          style={[styles.sessionChip, session === 'REGULAR_HOURS' && styles.sessionChipActive]}
+          onPress={() => handleSessionChange('REGULAR_HOURS')}
+        >
+          <Text style={[styles.sessionChipText, session === 'REGULAR_HOURS' && styles.activeChipText]}>Regular</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.sessionChip, session === 'PRE_MARKET' && styles.sessionChipActive]}
+          onPress={() => handleSessionChange('PRE_MARKET')}
+        >
+          <Text style={[styles.sessionChipText, session === 'PRE_MARKET' && styles.activeChipText]}>Pre-Mkt</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.sessionChip, session === 'AFTER_HOURS' && styles.sessionChipActive]}
+          onPress={() => handleSessionChange('AFTER_HOURS')}
+        >
+          <Text style={[styles.sessionChipText, session === 'AFTER_HOURS' && styles.activeChipText]}>After-Hrs</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -51,12 +99,73 @@ const styles = StyleSheet.create({
     backgroundColor: '#111827',
   },
   statusBar: {
-    padding: 8,
+    paddingHorizontal: 16,
+    paddingTop: 44,
+    paddingBottom: 12,
+    backgroundColor: '#1f2937',
+    borderBottomWidth: 1,
+    borderBottomColor: '#374151',
+  },
+  topStatusRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 40,
+    marginBottom: 10,
+  },
+  statusIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   statusText: {
-    color: 'white',
+    color: '#9ca3af',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  badgePill: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  badgeText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  sessionBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  sessionLabel: {
+    color: '#9ca3af',
+    fontSize: 11,
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  sessionChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    backgroundColor: '#111827',
+    borderWidth: 1,
+    borderColor: '#374151',
+  },
+  sessionChipActive: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
+  },
+  sessionChipText: {
+    color: '#9ca3af',
+    fontSize: 11,
+  },
+  activeChipText: {
+    color: '#ffffff',
     fontWeight: 'bold',
   },
 });

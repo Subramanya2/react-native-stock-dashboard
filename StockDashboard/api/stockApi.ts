@@ -70,3 +70,13 @@ export const executeOrder = async (order: OrderRequest) => {
     }
     return data;
 };
+
+export const updateMarketSession = async (session: string) => {
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/api/market-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session }),
+    });
+    return res.json();
+};

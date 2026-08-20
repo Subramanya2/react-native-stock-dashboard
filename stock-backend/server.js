@@ -29,6 +29,8 @@ let stockHistory = {
     'MSFT': Array.from({ length: 30 }, (_, i) => parseFloat((294.00 + (i * 0.20) + (Math.cos(i) * 0.8)).toFixed(2))),
 };
 
+let currentMarketSession = 'REGULAR_HOURS'; // 'REGULAR_HOURS' | 'PRE_MARKET' | 'AFTER_HOURS' | 'DEMO_LIVE'
+
 // --- Part 1: SSE Endpoint ---
 app.get('/sse/stocks', (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
@@ -39,13 +41,17 @@ app.get('/sse/stocks', (req, res) => {
     console.log('Client connected to SSE');
 
     const intervalId = setInterval(() => {
-        // Pick a random stock and simulate realistic percentage-based market volatility (±0.4% to ±1.2%)
         const symbols = Object.keys(stocks);
         const symbol = symbols[Math.floor(Math.random() * symbols.length)];
         const openPrice = openingPrices[symbol];
 
-        // Percentage drift between -1.2% and +1.2%
-        const percentDrift = (Math.random() - 0.49) * 0.024;
+        // Volatility multiplier based on active market session
+        let volatilityScale = 0.024;
+        if (currentMarketSession === 'PRE_MARKET') volatilityScale = 0.010;
+        if (currentMarketSession === 'AFTER_HOURS') volatilityScale = 0.005;
+        if (currentMarketSession === 'DEMO_LIVE') volatilityScale = 0.028;
+
+        const percentDrift = (Math.random() - 0.49) * volatilityScale;
         const priceChange = stocks[symbol] * percentDrift;
 
         stocks[symbol] = Math.max(20, stocks[symbol] + priceChange);
@@ -68,6 +74,9 @@ app.get('/sse/stocks', (req, res) => {
             change: parseFloat(totalChange.toFixed(2)),
             percentChange: parseFloat(percentChange.toFixed(2)),
             history: stockHistory[symbol],
+            session: currentMarketSession,
+            exchange: 'NASDAQ',
+            marketOpen: true,
             timestamp: new Date().toISOString(),
         };
 
@@ -75,13 +84,27 @@ app.get('/sse/stocks', (req, res) => {
         res.write(`id: ${new Date().getTime()}\n`);
         res.write(`event: stockUpdate\n`);
         res.write(`data: ${JSON.stringify(data)}\n\n`);
-    }, 800); // Send update every 800ms for lively UI streaming
+    }, 800);
 
     req.on('close', () => {
         console.log('Client disconnected from SSE');
         clearInterval(intervalId);
         res.end();
     });
+});
+
+app.get('/api/market-session', (req, res) => {
+    res.json({ session: currentMarketSession, exchange: 'NASDAQ' });
+});
+
+app.post('/api/market-session', (req, res) => {
+    const { session } = req.body;
+    if (['REGULAR_HOURS', 'PRE_MARKET', 'AFTER_HOURS', 'DEMO_LIVE'].includes(session)) {
+        currentMarketSession = session;
+        console.log(`Switched Market Session to: ${session}`);
+        return res.json({ success: true, session: currentMarketSession });
+    }
+    res.status(400).json({ error: 'Invalid session mode' });
 });
 
 // --- Part 2: REST Endpoints ---
