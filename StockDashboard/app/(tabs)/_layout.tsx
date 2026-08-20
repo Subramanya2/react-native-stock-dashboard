@@ -1,57 +1,131 @@
 import React from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={20} style={{ marginBottom: -2 }} {...props} />;
-}
-
-export default function TabLayout() {
+// Custom Floating Glassmorphic Bottom Tab Bar with Middle Separator
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   return (
+    <View style={[styles.tabBarContainer, { marginBottom: Math.max(10, insets.bottom) }]}>
+      {state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const label = options.title !== undefined ? options.title : route.name;
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        const iconName = route.name === 'index' ? 'line-chart' : 'pie-chart';
+        const color = isFocused ? '#6366f1' : '#64748b';
+
+        return (
+          <React.Fragment key={route.key}>
+            {index > 0 && <View style={styles.verticalSeparator} />}
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              onPress={onPress}
+              style={[styles.tabItem, isFocused && styles.tabItemActive]}
+              activeOpacity={0.7}
+            >
+              <FontAwesome name={iconName} size={18} color={color} style={styles.tabIcon} />
+              <Text style={[styles.tabLabel, { color }, isFocused && styles.tabLabelActive]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          </React.Fragment>
+        );
+      })}
+    </View>
+  );
+}
+
+export default function TabLayout() {
+  return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#6366f1',
-        tabBarInactiveTintColor: '#64748b',
-        tabBarStyle: {
-          backgroundColor: '#0b0f17',
-          borderTopColor: '#1e293b',
-          borderTopWidth: 1,
-          height: 56 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
-          paddingTop: 6,
-          elevation: 10,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 6,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '700',
-          letterSpacing: 0.3,
-        },
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Watchlist',
-          tabBarIcon: ({ color }) => <TabBarIcon name="line-chart" color={color} />,
         }}
       />
       <Tabs.Screen
         name="portfolio"
         options={{
           title: 'Portfolio',
-          tabBarIcon: ({ color }) => <TabBarIcon name="pie-chart" color={color} />,
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBarContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 16,
+    right: 16,
+    backgroundColor: '#141c2e',
+    borderRadius: 20,
+    height: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  verticalSeparator: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#1e293b',
+  },
+  tabItem: {
+    flex: 1,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    marginHorizontal: 4,
+  },
+  tabItemActive: {
+    backgroundColor: 'rgba(99, 102, 241, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.3)',
+  },
+  tabIcon: {
+    marginBottom: 2,
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  tabLabelActive: {
+    fontWeight: 'bold',
+    color: '#818cf8',
+  },
+});
