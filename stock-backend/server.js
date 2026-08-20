@@ -8,6 +8,20 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize smooth 30-tick historical price series for each stock
+let openingPrices = {
+    'AAPL': 146.50,
+    'GOOGL': 2750.00,
+    'TSLA': 718.00,
+    'MSFT': 294.00,
+};
+
+let stocks = {
+    'AAPL': 150.00,
+    'GOOGL': 2800.00,
+    'TSLA': 700.00,
+    'MSFT': 300.00,
+};
+
 let stockHistory = {
     'AAPL': Array.from({ length: 30 }, (_, i) => parseFloat((146.50 + (i * 0.12) + (Math.sin(i) * 0.5)).toFixed(2))),
     'GOOGL': Array.from({ length: 30 }, (_, i) => parseFloat((2750.00 + (i * 1.66) + (Math.cos(i) * 5.0)).toFixed(2))),
