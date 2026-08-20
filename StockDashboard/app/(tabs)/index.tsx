@@ -146,6 +146,7 @@ export default function WatchlistScreen() {
             )}
             // @ts-ignore
             estimatedItemSize={110}
+            contentContainerStyle={{ paddingBottom: 24 }}
             keyExtractor={(item) => item.symbol}
           />
         </View>

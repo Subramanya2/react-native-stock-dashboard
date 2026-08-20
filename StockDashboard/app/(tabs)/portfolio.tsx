@@ -217,7 +217,7 @@ export default function PortfolioScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0b0f17' },
-  contentContainer: { padding: 16 },
+  contentContainer: { padding: 16, paddingBottom: 40 },
   title: { fontSize: 26, fontWeight: 'bold', color: 'white', marginBottom: 16, marginTop: 8 },
   netWorthCard: {
     backgroundColor: '#141c2e',
