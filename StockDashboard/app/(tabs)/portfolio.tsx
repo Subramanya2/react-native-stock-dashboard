@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 import { usePortfolioValuation } from '../../hooks/usePortfolioValuation';
 import { NetWorthHeroCard } from '../../components/NetWorthHeroCard';
 import { HoldingPositionCard } from '../../components/HoldingPositionCard';
 import { TradeModal } from '../../components/TradeModal';
+import { useMarketData } from '../../hooks/useMarketData';
 
 export default function PortfolioScreen() {
   const {
@@ -18,6 +20,19 @@ export default function PortfolioScreen() {
     totalPnlDollar,
     totalPnlPercent,
   } = usePortfolioValuation();
+
+  const [refreshing, setRefreshing] = useState(false);
+  const { setupSSE } = useMarketData();
+  const queryClient = useQueryClient();
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    setupSSE();
+    await queryClient.invalidateQueries();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 600);
+  };
 
   const [tradeModalState, setTradeModalState] = useState<{
     visible: boolean;
@@ -45,7 +60,17 @@ export default function PortfolioScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#6366f1"
+            colors={['#6366f1']}
+          />
+        }
+      >
         <Text style={styles.title}>Portfolio Overview</Text>
 
         {/* Net Worth Hero Card */}

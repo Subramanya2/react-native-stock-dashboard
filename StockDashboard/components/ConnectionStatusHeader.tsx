@@ -6,11 +6,13 @@ import { updateMarketSession } from '../api/stockApi';
 interface ConnectionStatusHeaderProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  onManualReconnect?: () => void;
 }
 
 export const ConnectionStatusHeader: React.FC<ConnectionStatusHeaderProps> = ({
   searchQuery,
   setSearchQuery,
+  onManualReconnect,
 }) => {
   const status = useSSEStore((state) => state.status);
   const session = useSSEStore((state) => state.session);
@@ -40,13 +42,17 @@ export const ConnectionStatusHeader: React.FC<ConnectionStatusHeaderProps> = ({
     <View style={styles.statusBar}>
       {/* Reconnecting Alert Banner */}
       {!isConnected && (
-        <View style={styles.reconnectBanner}>
+        <TouchableOpacity
+          style={styles.reconnectBanner}
+          onPress={onManualReconnect}
+          activeOpacity={0.8}
+        >
           <Text style={styles.reconnectText}>
             {status === 'connecting'
-              ? 'Connecting to real-time market data feed...'
-              : 'Stream Disconnected (Attempting Auto-Reconnect)'}
+              ? 'Connecting to real-time market stream...'
+              : '⚡ Stream Disconnected • Tap to Reconnect Now 🔄'}
           </Text>
-        </View>
+        </TouchableOpacity>
       )}
 
       {/* Main Header Title Row */}

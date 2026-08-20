@@ -2,15 +2,31 @@ import { useState, useMemo, useEffect } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
+import { useQueryClient } from '@tanstack/react-query';
 import StockRow from '../../components/StockRow';
 import { ConnectionStatusHeader } from '../../components/ConnectionStatusHeader';
 import { WATCHLIST } from '../../constants/mockData';
+import { useMarketData } from '../../hooks/useMarketData';
 
 export default function WatchlistScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
-  // 200ms Debounce timer for smooth keyboard typing & performance optimization
+  const { setupSSE } = useMarketData();
+  const queryClient = useQueryClient();
+
+  // Manual Pull-to-Refresh & Reconnect Handler
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    setupSSE();
+    await queryClient.invalidateQueries();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 600);
+  };
+
+  // 200ms Debounce timer for smooth keyboard typing
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(searchQuery);
@@ -33,7 +49,11 @@ export default function WatchlistScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ConnectionStatusHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <ConnectionStatusHeader
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onManualReconnect={handleRefresh}
+      />
       {filteredWatchlist.length === 0 ? (
         <View style={styles.noResultsContainer}>
           <Text style={styles.noResultsText}>No stocks match "{debouncedQuery}"</Text>
@@ -52,6 +72,8 @@ export default function WatchlistScreen() {
             )}
             // @ts-ignore
             estimatedItemSize={110}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
             contentContainerStyle={{ paddingBottom: 24 }}
             keyExtractor={(item) => item.symbol}
           />
