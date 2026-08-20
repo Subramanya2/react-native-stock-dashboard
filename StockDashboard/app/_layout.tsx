@@ -11,6 +11,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
+import * as SystemUI from 'expo-system-ui';
 import { Platform, View } from 'react-native';
 
 export {
@@ -88,6 +89,9 @@ function AppContent() {
   const { setupSSE, cleanupSSE } = useMarketData();
   useEffectOnce(() => {
     setupSSE();
+    // Set the native window background to dark — this shows through
+    // both transparent system bars in edge-to-edge mode
+    SystemUI.setBackgroundColorAsync('#0b0f17').catch(() => {});
     if (Platform.OS === 'android') {
       NavigationBar.setButtonStyleAsync('light').catch(() => {});
     }
@@ -99,7 +103,7 @@ function AppContent() {
   return (
     <View style={{ flex: 1, backgroundColor: '#0b0f17' }}>
       <ThemeProvider value={customDarkTheme}>
-        <StatusBar style="light" backgroundColor="#0b0f17" />
+        <StatusBar style="light" />
         <ToastNotification />
         <Stack
           screenOptions={{

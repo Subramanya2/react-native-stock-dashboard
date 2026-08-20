@@ -8,17 +8,19 @@
     "scheme": "stockdashboard",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "backgroundColor": "#0b0f17",
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#0b0f17"
     },
     "androidStatusBar": {
-      "backgroundColor": "#0b0f17",
-      "barStyle": "light-content"
+      "barStyle": "light-content",
+      "translucent": true
     },
     "androidNavigationBar": {
-      "barStyle": "light-content"
+      "barStyle": "light-content",
+      "enforceContrast": false
     },
     "ios": {
       "supportsTablet": true
@@ -39,7 +41,8 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-system-ui"
     ],
     "experiments": {
       "typedRoutes": true
