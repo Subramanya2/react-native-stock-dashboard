@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStockHistory } from '../../api/stockApi';
@@ -13,12 +13,16 @@ type Timeframe = '1D' | '1W' | '1M' | '1Y';
 export default function StockDetailScreen() {
   const { symbol } = useLocalSearchParams<{ symbol: string }>();
   const router = useRouter();
+  const { width: windowWidth } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
   const [timeframe, setTimeframe] = useState<Timeframe>('1M');
   const [modalVisible, setModalVisible] = useState(false);
   const [tradeType, setTradeType] = useState<'BUY' | 'SELL'>('BUY');
 
   const stockSymbol = symbol ? symbol.toUpperCase() : 'AAPL';
+  const chartWidth = Math.max(280, windowWidth - 48);
+  const chartHeight = 180;
 
   // Live SSE price subscription
   const { data: liveData } = useQuery<StockUpdate>({
@@ -54,22 +58,19 @@ export default function StockDetailScreen() {
   const isPositive = priceChange >= 0;
   const themeColor = isPositive ? '#10b981' : '#f43f5e';
 
-  // SVG Chart path calculation
+  // Dynamic SVG Chart path calculation
   const chartPath = useMemo(() => {
     if (filteredHistory.length < 2) return { linePath: '', areaPath: '' };
 
-    const width = 340;
-    const height = 180;
     const padding = 10;
-
     const prices = filteredHistory.map((h) => h.price);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     const range = max - min || 1;
 
     const points = filteredHistory.map((h, index) => {
-      const x = padding + (index / (filteredHistory.length - 1)) * (width - 2 * padding);
-      const y = height - padding - ((h.price - min) / range) * (height - 2 * padding);
+      const x = padding + (index / (filteredHistory.length - 1)) * (chartWidth - 2 * padding);
+      const y = chartHeight - padding - ((h.price - min) / range) * (chartHeight - 2 * padding);
       return { x, y };
     });
 
@@ -78,10 +79,10 @@ export default function StockDetailScreen() {
       linePath += ` L ${points[i].x} ${points[i].y}`;
     }
 
-    const areaPath = `${linePath} L ${points[points.length - 1].x} ${height} L ${points[0].x} ${height} Z`;
+    const areaPath = `${linePath} L ${points[points.length - 1].x} ${chartHeight} L ${points[0].x} ${chartHeight} Z`;
 
     return { linePath, areaPath };
-  }, [filteredHistory]);
+  }, [filteredHistory, chartWidth]);
 
   const openTradeModal = (type: 'BUY' | 'SELL') => {
     setTradeType(type);
@@ -93,13 +94,13 @@ export default function StockDetailScreen() {
       <Stack.Screen
         options={{
           title: `${stockSymbol} Detailed Analytics`,
-          headerStyle: { backgroundColor: '#0b0f17' },
+          headerStyle: { backgroundColor: '#141c2e' },
           headerTintColor: '#ffffff',
           headerTitleStyle: { fontWeight: 'bold', fontSize: 16 },
         }}
       />
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <ScrollView style={styles.container} contentContainerStyle={[styles.contentContainer, { paddingBottom: 90 + insets.bottom }]}>
         {/* Price Summary Header */}
         <View style={styles.headerBox}>
           <Text style={styles.symbolTitle}>{stockSymbol} Stock</Text>
@@ -127,11 +128,11 @@ export default function StockDetailScreen() {
         {/* Interactive Chart Section */}
         <View style={styles.chartContainer}>
           {isLoading ? (
-            <ActivityIndicator size="large" color={themeColor} style={{ height: 180 }} />
+            <ActivityIndicator size="large" color={themeColor} style={{ height: chartHeight }} />
           ) : error ? (
             <Text style={styles.errorText}>Failed to load stock chart data.</Text>
           ) : (
-            <Svg width={340} height={180}>
+            <Svg width={chartWidth} height={chartHeight}>
               <Defs>
                 <LinearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                   <Stop offset="0%" stopColor={themeColor} stopOpacity="0.35" />
@@ -181,7 +182,7 @@ export default function StockDetailScreen() {
       </ScrollView>
 
       {/* Floating Bottom Action Bar */}
-      <View style={styles.actionBar}>
+      <View style={[styles.actionBar, { paddingBottom: Math.max(14, insets.bottom) }]}>
         <TouchableOpacity style={[styles.actionBtn, styles.buyBtn]} onPress={() => openTradeModal('BUY')}>
           <Text style={styles.btnText}>Trade BUY</Text>
         </TouchableOpacity>
@@ -204,7 +205,7 @@ export default function StockDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0b0f17' },
-  contentContainer: { padding: 16, paddingBottom: 100 },
+  contentContainer: { padding: 16 },
   headerBox: { marginBottom: 16 },
   symbolTitle: { color: '#94a3b8', fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: '600' },
   priceDisplay: { color: '#ffffff', fontSize: 38, fontWeight: 'bold', marginVertical: 4 },
@@ -265,7 +266,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#141c2e',
-    padding: 16,
+    paddingTop: 12,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     gap: 12,
     borderTopWidth: 1,
