@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStockHistory } from '../../api/stockApi';
@@ -51,7 +52,7 @@ export default function StockDetailScreen() {
   const priceChange = liveData?.change ?? (currentPrice - baseOpenPrice);
   const percentChange = liveData?.percentChange ?? (baseOpenPrice ? (priceChange / baseOpenPrice) * 100 : 0);
   const isPositive = priceChange >= 0;
-  const themeColor = isPositive ? '#10b981' : '#ef4444';
+  const themeColor = isPositive ? '#10b981' : '#f43f5e';
 
   // SVG Chart path calculation
   const chartPath = useMemo(() => {
@@ -64,18 +65,22 @@ export default function StockDetailScreen() {
     const prices = filteredHistory.map((h) => h.price);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
-    const range = max - min === 0 ? 1 : max - min;
+    const range = max - min || 1;
 
-    const points = filteredHistory.map((h, i) => {
-      const x = (i / (filteredHistory.length - 1)) * (width - padding * 2) + padding;
-      const y = height - padding - ((h.price - min) / range) * (height - padding * 2);
+    const points = filteredHistory.map((h, index) => {
+      const x = padding + (index / (filteredHistory.length - 1)) * (width - 2 * padding);
+      const y = height - padding - ((h.price - min) / range) * (height - 2 * padding);
       return { x, y };
     });
 
-    const line = `M ${points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L ')}`;
-    const area = `${line} L ${points[points.length - 1].x.toFixed(1)},${height} L ${points[0].x.toFixed(1)},${height} Z`;
+    let linePath = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      linePath += ` L ${points[i].x} ${points[i].y}`;
+    }
 
-    return { linePath: line, areaPath: area };
+    const areaPath = `${linePath} L ${points[points.length - 1].x} ${height} L ${points[0].x} ${height} Z`;
+
+    return { linePath, areaPath };
   }, [filteredHistory]);
 
   const openTradeModal = (type: 'BUY' | 'SELL') => {
@@ -84,13 +89,13 @@ export default function StockDetailScreen() {
   };
 
   return (
-    <>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <Stack.Screen
         options={{
-          title: stockSymbol,
-          headerStyle: { backgroundColor: '#111827' },
+          title: `${stockSymbol} Detailed Analytics`,
+          headerStyle: { backgroundColor: '#0b0f17' },
           headerTintColor: '#ffffff',
-          headerTitleStyle: { fontWeight: 'bold' },
+          headerTitleStyle: { fontWeight: 'bold', fontSize: 16 },
         }}
       />
 
@@ -193,7 +198,7 @@ export default function StockDetailScreen() {
         initialType={tradeType}
         onClose={() => setModalVisible(false)}
       />
-    </>
+    </SafeAreaView>
   );
 }
 

@@ -1,4 +1,5 @@
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { fetchPortfolio, PortfolioHolding } from '../../api/stockApi';
 import { useOrderExecution } from '../../hooks/useOrderExecution';
@@ -41,8 +42,8 @@ export default function PortfolioScreen() {
     MSFT: msftQuery.data?.price ?? 300.0,
   };
 
-  if (isLoading && !data) return <View style={styles.container}><Text style={styles.text}>Loading Portfolio...</Text></View>;
-  if (error && !data) return <View style={styles.container}><Text style={styles.text}>Error loading portfolio.</Text></View>;
+  if (isLoading && !data) return <SafeAreaView style={styles.container} edges={['top']}><Text style={styles.text}>Loading Portfolio...</Text></SafeAreaView>;
+  if (error && !data) return <SafeAreaView style={styles.container} edges={['top']}><Text style={styles.text}>Error loading portfolio.</Text></SafeAreaView>;
 
   const cashBalance = data?.cashBalance ?? 10000;
   const holdings = data?.holdings || [];
@@ -82,8 +83,9 @@ export default function PortfolioScreen() {
   const cashPercent = totalNetWorth > 0 ? (cashBalance / totalNetWorth) * 100 : 100;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <Text style={styles.title}>My Portfolio</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        <Text style={styles.title}>My Portfolio</Text>
 
       {/* Net Worth Hero Card */}
       <View style={styles.netWorthCard}>
@@ -208,14 +210,15 @@ export default function PortfolioScreen() {
           </View>
         );
       })}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0b0f17' },
   contentContainer: { padding: 16 },
-  title: { fontSize: 26, fontWeight: 'bold', color: 'white', marginBottom: 16, marginTop: 40 },
+  title: { fontSize: 26, fontWeight: 'bold', color: 'white', marginBottom: 16, marginTop: 8 },
   netWorthCard: {
     backgroundColor: '#141c2e',
     padding: 18,
