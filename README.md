@@ -1,94 +1,71 @@
-# 📈 Real-Time Stock Trading & Portfolio Dashboard
+# 🚀 High-Frequency Stock Trading & Portfolio Dashboard
 
-A high-performance **React Native (Expo)** mobile & web trading dashboard engineered for low-latency market streaming, optimistic order execution, persistent query caching, and interactive financial charts.
+A production-grade, real-time React Native (Expo) stock trading platform built with **TanStack Query v5**, **MMKV**, **Reanimated**, and **Server-Sent Events (SSE)**.
 
 ---
 
-## 🛠️ Architecture & System Data Flow
+## 🌟 Key Architecture & Technical Highlights
+
+### ⚡ Phase 1: MMKV Persistence & Offline Boot
+- **Fast Local Disk Storage**: Utilizes `react-native-mmkv` with `@tanstack/react-query-persist-client` and `createSyncStoragePersister`.
+- **Instant Stale Load**: Serves cached watchlist and portfolio data instantly on boot before SSE socket connection establishes.
+- **Graceful Fallback**: Custom memory-storage wrapper ensures zero crashes when running in web or Expo Go environments.
+
+### 🔄 Phase 2: Optimistic Order Execution & State Rollback
+- **Optimistic Mutation**: Custom `useOrderExecution` hook built on TanStack Query's `useMutation`.
+- **Snapshot & Rollback**: Implements `onMutate` cache snapshotting. Instantly updates portfolio cash balance and share holdings on order placement. Automatically rolls back state upon network failure (`onError`).
+
+### 📈 Phase 3: High-Frequency SSE Engine & Sparkline Charts
+- **Hermes-Compatible EventSource**: Native `CustomEventSource` streaming engine built with chunked `XMLHttpRequest` stream buffering. Avoids Node/Hermes `Event` global reference crashes.
+- **Live Sparkline Charts**: High-performance SVG sparkline rendering (`react-native-svg`) with 20-tick sliding window cache buffers.
+- **Reanimated Price Flash Overlay**: `react-native-reanimated` color sequence highlights (`rgba(16, 185, 129, 0.3)` / `rgba(239, 68, 68, 0.3)`) on live price updates.
+
+### 💼 Portfolio Net Worth & Asset Allocation
+- **Real-Time Net Worth**: Dynamically calculates total net worth (`Cash + Live Valuation of Holdings`) updated live on every SSE tick.
+- **Multi-Color Asset Allocation Bar**: Displays visual percentage breakdown across Cash, AAPL, GOOGL, TSLA, and MSFT.
+
+### 🕒 Market Sessions & Network Health Banner
+- **Session Modes**: Support for `Regular Hours`, `Pre-Market`, `After-Hours`, and `24/7 Demo` volatility modes.
+- **Network Health Banner**: Live banner alerts user of SSE stream reconnect attempts.
+- **Ticker Search & Filter**: Real-time Watchlist search input.
+
+---
+
+## 📊 System Sequence Diagram
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Backend as Node.js Express Server
+    participant UI as React Native UI (Expo)
+    participant Cache as MMKV / TanStack Query
     participant SSE as CustomEventSource Engine
-    participant QueryCache as TanStack Query Cache
-    participant MMKV as Disk Storage Adapter
-    participant UI as React Native UI Components
+    participant API as Express API Server
 
-    Backend->>SSE: Stream stockUpdate ticks (1 sec interval)
-    SSE->>QueryCache: Direct Mutation (setQueryData)
-    QueryCache->>MMKV: Persist Cache to Disk (24h TTL)
-    QueryCache->>UI: FlashList Row Re-render (React.memo)
-    UI->>UI: Trigger Reanimated Price Flash Animation
-    
-    Note over UI,Backend: Optimistic Order Execution Flow
-    UI->>QueryCache: Cancel queries & Snapshot Previous Portfolio
-    UI->>QueryCache: Mutate Cash Balance & Holdings Optimistically
-    UI->>Backend: POST /api/order (Buy/Sell)
-    alt Order Success
-        Backend-->>UI: 200 OK Response
-        QueryCache->>Backend: Sync Final Cache State (onSettled)
-    else Order Error / Network Failure
-        Backend-->>UI: 400 Error Response
-        QueryCache->>UI: Rollback Cache to Snapshot (onError)
-    end
+    UI->>Cache: Boot App (Load Stale Portfolio & Watchlist)
+    Cache-->>UI: Instantly Render Stale Data (0ms)
+    UI->>SSE: Open GET /sse/stocks Stream
+    SSE->>API: HTTP Chunked SSE Handshake
+    API-->>SSE: Stream Event Ticks (800ms)
+    SSE->>Cache: setQueryData(stock-price, tick)
+    Cache-->>UI: Reanimated Flash & Sparkline Update
+    UI->>API: POST /api/order (Optimistic BUY)
+    API-->>UI: 200 OK (Confirmed)
 ```
 
 ---
 
-## ⚡ Technical Highlights & Resume Features
+## 🛠️ Installation & Setup
 
-* **Real-Time Streaming Engine**: Custom zero-dependency [`CustomEventSource`](file:///d:/cv-projects/StockAssignment/StockDashboard/services/eventSource.ts) handling Server-Sent Events (SSE) via `XMLHttpRequest` chunked streaming on mobile and native `EventSource` on Web, featuring **exponential backoff reconnection logic**.
-* **Optimistic Order Execution with Rollback**: Custom [`useOrderExecution`](file:///d:/cv-projects/StockAssignment/StockDashboard/hooks/useOrderExecution.ts) hook that instantly recalculates cash balance & portfolio holdings in the query cache upon placing an order, automatically rolling back on failure (`onMutate` -> `onError` -> `onSettled`).
-* **Offline Query Persistence**: Integrated `PersistQueryClientProvider` with synchronous [`storage.ts`](file:///d:/cv-projects/StockAssignment/StockDashboard/services/storage.ts) adapter for instant application boot from disk before network connection.
-* **Interactive Stock Detail & Timeframe Charts**: Dynamic dynamic route [`app/stock/[symbol].tsx`](file:///d:/cv-projects/StockAssignment/StockDashboard/app/stock/%5Bsymbol%5D.tsx) with interactive SVG area charts, timeframe filter buttons (`1D`, `1W`, `1M`, `1Y`), and market statistics grid.
-* **Reanimated Live Price Flashes**: `react-native-reanimated` color sequence animations flashing green/red on price update ticks.
-* **Virtualized List Scaling**: Powered by `@shopify/flash-list` and strict `React.memo` row memoization to prevent main-thread layout thrashing.
-* **Dynamic Host Resolution**: Cross-environment IP resolver [`getApiBaseUrl()`](file:///d:/cv-projects/StockAssignment/StockDashboard/api/stockApi.ts) supporting Android Emulators (`10.0.2.2`), iOS Simulators, Physical Devices via Expo `hostUri`, and Web.
-
----
-
-## 🚀 Tech Stack
-
-* **Frontend Framework**: React Native, Expo SDK 54, Expo Router v6
-* **Language**: TypeScript (Strict Mode)
-* **Data Fetching & Cache**: TanStack Query v5 (React Query)
-* **Offline Storage**: `react-native-mmkv` with cross-platform fallback
-* **Global UI State**: Zustand
-* **List Virtualization**: `@shopify/flash-list`
-* **Animations**: `react-native-reanimated`
-* **Charts & Graphics**: `react-native-svg`
-* **Backend**: Node.js, Express v5, CORS, Server-Sent Events
-
----
-
-## 🏁 How to Run
-
-### 1. Start the Backend Server
-
+### 1. Start Mock Backend Server
 ```bash
 cd stock-backend
 npm install
 node server.js
-# Server runs at http://localhost:8080
 ```
 
-### 2. Start the Expo Application
-
+### 2. Start Expo App
 ```bash
 cd StockDashboard
 npm install
 npx expo start -c
-```
-
-* **Web**: Press `w` in terminal to run in web browser.
-* **Mobile (Expo Go)**: Scan the generated QR code using your iOS or Android camera / Expo Go app.
-
----
-
-## 🧪 Unit Testing
-
-```bash
-cd StockDashboard
-npm test
 ```

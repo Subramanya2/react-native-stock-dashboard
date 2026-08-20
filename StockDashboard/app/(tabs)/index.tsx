@@ -1,4 +1,5 @@
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { useState, useMemo } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import StockRow from '../../components/StockRow';
 import { useSSEStore, MarketSession } from '../../store/useSSEStore';
@@ -13,7 +14,7 @@ const WATCHLIST = [
 ];
 
 // Connection & Market Session status header
-const ConnectionStatus = () => {
+const ConnectionStatus = ({ searchQuery, setSearchQuery }: { searchQuery: string; setSearchQuery: (q: string) => void }) => {
   const status = useSSEStore((state) => state.status);
   const session = useSSEStore((state) => state.session);
 
@@ -36,6 +37,13 @@ const ConnectionStatus = () => {
 
   return (
     <View style={styles.statusBar}>
+      {/* Reconnecting Alert Banner */}
+      {status !== 'connected' && (
+        <View style={styles.reconnectBanner}>
+          <Text style={styles.reconnectText}>⚡ {status === 'connecting' ? 'Connecting to SSE market stream...' : 'Stream Disconnected (Attempting Reconnect)'}</Text>
+        </View>
+      )}
+
       <View style={styles.topStatusRow}>
         <View style={styles.statusIndicator}>
           <View style={[styles.dot, { backgroundColor: statusColor }]} />
@@ -75,26 +83,58 @@ const ConnectionStatus = () => {
           <Text style={[styles.sessionChipText, session === 'DEMO_LIVE' && styles.activeChipText]}>24/7 Demo</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Live Stock Search Input */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="🔍 Search ticker (e.g. AAPL, TSLA)..."
+          placeholderTextColor="#6b7280"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCapitalize="characters"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity style={styles.clearBtn} onPress={() => setSearchQuery('')}>
+            <Text style={styles.clearBtnText}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 };
 
 export default function WatchlistScreen() {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredWatchlist = useMemo(() => {
+    if (!searchQuery.trim()) return WATCHLIST;
+    return WATCHLIST.filter((item) =>
+      item.symbol.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    );
+  }, [searchQuery]);
+
   return (
     <View style={styles.container}>
-      <ConnectionStatus />
-      <FlashList
-        data={WATCHLIST}
-        renderItem={({ item }) => (
-          <StockRow
-            symbol={item.symbol}
-            openingPrice={item.openingPrice}
-          />
-        )}
-        // @ts-ignore
-        estimatedItemSize={60}
-        keyExtractor={(item) => item.symbol}
-      />
+      <ConnectionStatus searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      {filteredWatchlist.length === 0 ? (
+        <View style={styles.noResultsContainer}>
+          <Text style={styles.noResultsText}>No stocks match "{searchQuery}"</Text>
+        </View>
+      ) : (
+        <FlashList
+          data={filteredWatchlist}
+          renderItem={({ item }) => (
+            <StockRow
+              symbol={item.symbol}
+              openingPrice={item.openingPrice}
+            />
+          )}
+          // @ts-ignore
+          estimatedItemSize={60}
+          keyExtractor={(item) => item.symbol}
+        />
+      )}
     </View>
   );
 }
@@ -111,6 +151,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#1f2937',
     borderBottomWidth: 1,
     borderBottomColor: '#374151',
+  },
+  reconnectBanner: {
+    backgroundColor: '#92400e',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  reconnectText: {
+    color: '#fef3c7',
+    fontSize: 11,
+    fontWeight: 'bold',
   },
   topStatusRow: {
     flexDirection: 'row',
@@ -146,16 +199,17 @@ const styles = StyleSheet.create({
   sessionBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
+    marginBottom: 10,
   },
   sessionLabel: {
     color: '#9ca3af',
     fontSize: 11,
     fontWeight: '600',
-    marginRight: 4,
+    marginRight: 2,
   },
   sessionChip: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     paddingVertical: 3,
     borderRadius: 4,
     backgroundColor: '#111827',
@@ -168,10 +222,43 @@ const styles = StyleSheet.create({
   },
   sessionChipText: {
     color: '#9ca3af',
-    fontSize: 11,
+    fontSize: 10,
   },
   activeChipText: {
     color: '#ffffff',
     fontWeight: 'bold',
+  },
+  searchContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  searchInput: {
+    backgroundColor: '#111827',
+    color: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    fontSize: 13,
+    borderWidth: 1,
+    borderColor: '#374151',
+  },
+  clearBtn: {
+    position: 'absolute',
+    right: 10,
+    padding: 4,
+  },
+  clearBtnText: {
+    color: '#9ca3af',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  noResultsContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  noResultsText: {
+    color: '#9ca3af',
+    fontSize: 14,
+    fontStyle: 'italic',
   },
 });
