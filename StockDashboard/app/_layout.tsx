@@ -1,5 +1,6 @@
-import { QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { queryClient } from '../services/queryClient';
+import { clientPersister } from '../services/storage';
 import { useMarketData } from '../hooks/useMarketData';
 import { useEffect, useRef } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -87,10 +88,12 @@ function AppContent() {
 
 // This component's ONLY job is to set up the providers.
 function RootLayoutNav() {
-  // NO hook is called here!
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister: clientPersister, maxAge: 1000 * 60 * 60 * 24 }}
+    >
       <AppContent />
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
