@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useQueryClient } from '@tanstack/react-query';
 import StockRow from '../../components/StockRow';
@@ -9,6 +9,7 @@ import { WATCHLIST } from '../../constants/mockData';
 import { useMarketData } from '../../hooks/useMarketData';
 
 export default function WatchlistScreen() {
+  const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -74,7 +75,7 @@ export default function WatchlistScreen() {
             estimatedItemSize={110}
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            contentContainerStyle={{ paddingBottom: 24 }}
+            contentContainerStyle={{ paddingBottom: 95 + insets.bottom }}
             keyExtractor={(item) => item.symbol}
           />
         </View>

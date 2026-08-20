@@ -8,7 +8,10 @@ import { HoldingPositionCard } from '../../components/HoldingPositionCard';
 import { TradeModal } from '../../components/TradeModal';
 import { useMarketData } from '../../hooks/useMarketData';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 export default function PortfolioScreen() {
+  const insets = useSafeAreaInsets();
   const {
     isLoading,
     error,
@@ -61,7 +64,7 @@ export default function PortfolioScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[styles.contentContainer, { paddingBottom: 95 + insets.bottom }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
