@@ -68,6 +68,12 @@ const ConnectionStatus = () => {
         >
           <Text style={[styles.sessionChipText, session === 'AFTER_HOURS' && styles.activeChipText]}>After-Hrs</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.sessionChip, session === 'DEMO_LIVE' && styles.sessionChipActive]}
+          onPress={() => handleSessionChange('DEMO_LIVE')}
+        >
+          <Text style={[styles.sessionChipText, session === 'DEMO_LIVE' && styles.activeChipText]}>24/7 Demo</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
