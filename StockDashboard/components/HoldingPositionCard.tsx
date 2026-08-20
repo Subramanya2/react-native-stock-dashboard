@@ -42,21 +42,21 @@ export const HoldingPositionCard: React.FC<HoldingPositionCardProps> = ({
         </View>
       </View>
 
-      {/* Metrics Row */}
-      <View style={styles.holdingDetailsRow}>
-        <View style={styles.detailCol}>
+      {/* Metrics 2x2 Grid with Optimal Spacing */}
+      <View style={styles.holdingDetailsGrid}>
+        <View style={styles.detailCard}>
           <Text style={styles.detailLabel}>Avg Buy Price</Text>
           <Text style={styles.detailValue}>${holding.avgCost.toFixed(2)}</Text>
         </View>
-        <View style={styles.detailCol}>
+        <View style={styles.detailCard}>
           <Text style={styles.detailLabel}>Total Spent</Text>
           <Text style={styles.detailValue}>${holding.totalSpent.toFixed(2)}</Text>
         </View>
-        <View style={styles.detailCol}>
+        <View style={styles.detailCard}>
           <Text style={styles.detailLabel}>Current Price</Text>
           <Text style={styles.detailValue}>${holding.currentPrice.toFixed(2)}</Text>
         </View>
-        <View style={styles.detailCol}>
+        <View style={styles.detailCard}>
           <Text style={styles.detailLabel}>Current Value</Text>
           <Text style={styles.detailValue}>${holding.currentValue.toFixed(2)}</Text>
         </View>
@@ -85,16 +85,21 @@ const styles = StyleSheet.create({
   holdingCard: {
     backgroundColor: '#141c2e',
     padding: 16,
-    borderRadius: 14,
-    marginBottom: 12,
+    borderRadius: 16,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
   },
   holdingHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   holdingSymbol: {
     color: '#ffffff',
@@ -111,7 +116,7 @@ const styles = StyleSheet.create({
   },
   holdingValText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
   },
   holdingPnlBadgeText: {
@@ -119,30 +124,32 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 2,
   },
-  holdingDetailsRow: {
+  holdingDetailsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 14,
+  },
+  detailCard: {
+    width: '48.5%',
     backgroundColor: '#0b0f17',
-    padding: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderRadius: 10,
-    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#1e293b',
   },
-  detailCol: {
-    alignItems: 'center',
-  },
   detailLabel: {
     color: '#64748b',
-    fontSize: 10,
+    fontSize: 11,
     textTransform: 'uppercase',
     fontWeight: '600',
-    marginBottom: 2,
+    marginBottom: 3,
   },
   detailValue: {
     color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   holdingActionRow: {
     flexDirection: 'row',
@@ -150,8 +157,8 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
     alignItems: 'center',
   },
   buyBtn: {
@@ -162,7 +169,7 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: '#ffffff',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });
