@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStockHistory } from '../../api/stockApi';
 import { getStockPriceQueryKey, StockUpdate } from '../../hooks/useMarketData';
+import { StockDetailChart } from '../../components/StockDetailChart';
+import { KeyStatisticsGrid } from '../../components/KeyStatisticsGrid';
 import { TradeModal } from '../../components/TradeModal';
-import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 type Timeframe = '1D' | '1W' | '1M' | '1Y';
 
@@ -58,32 +59,6 @@ export default function StockDetailScreen() {
   const isPositive = priceChange >= 0;
   const themeColor = isPositive ? '#10b981' : '#f43f5e';
 
-  // Dynamic SVG Chart path calculation
-  const chartPath = useMemo(() => {
-    if (filteredHistory.length < 2) return { linePath: '', areaPath: '' };
-
-    const padding = 10;
-    const prices = filteredHistory.map((h) => h.price);
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    const range = max - min || 1;
-
-    const points = filteredHistory.map((h, index) => {
-      const x = padding + (index / (filteredHistory.length - 1)) * (chartWidth - 2 * padding);
-      const y = chartHeight - padding - ((h.price - min) / range) * (chartHeight - 2 * padding);
-      return { x, y };
-    });
-
-    let linePath = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 1; i < points.length; i++) {
-      linePath += ` L ${points[i].x} ${points[i].y}`;
-    }
-
-    const areaPath = `${linePath} L ${points[points.length - 1].x} ${chartHeight} L ${points[0].x} ${chartHeight} Z`;
-
-    return { linePath, areaPath };
-  }, [filteredHistory, chartWidth]);
-
   const openTradeModal = (type: 'BUY' | 'SELL') => {
     setTradeType(type);
     setModalVisible(true);
@@ -125,60 +100,21 @@ export default function StockDetailScreen() {
           ))}
         </View>
 
-        {/* Interactive Chart Section */}
-        <View style={styles.chartContainer}>
-          {isLoading ? (
-            <ActivityIndicator size="large" color={themeColor} style={{ height: chartHeight }} />
-          ) : error ? (
-            <Text style={styles.errorText}>Failed to load stock chart data.</Text>
-          ) : (
-            <Svg width={chartWidth} height={chartHeight}>
-              <Defs>
-                <LinearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0%" stopColor={themeColor} stopOpacity="0.35" />
-                  <Stop offset="100%" stopColor={themeColor} stopOpacity="0.0" />
-                </LinearGradient>
-              </Defs>
-              <Path d={chartPath.areaPath} fill="url(#chartGradient)" />
-              <Path
-                d={chartPath.linePath}
-                fill="none"
-                stroke={themeColor}
-                strokeWidth={2.5}
-                strokeLinecap="round"
-              />
-            </Svg>
-          )}
-        </View>
+        {/* Modular SVG Chart Component */}
+        <StockDetailChart
+          filteredHistory={filteredHistory}
+          isLoading={isLoading}
+          error={error}
+          themeColor={themeColor}
+          chartWidth={chartWidth}
+          chartHeight={chartHeight}
+        />
 
-        {/* Market Statistics Grid */}
-        <Text style={styles.sectionHeader}>Key Statistics</Text>
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Open</Text>
-            <Text style={styles.statValue}>${baseOpenPrice.toFixed(2)}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>High</Text>
-            <Text style={styles.statValue}>${(currentPrice * 1.03).toFixed(2)}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Low</Text>
-            <Text style={styles.statValue}>${(currentPrice * 0.97).toFixed(2)}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>52-Wk Range</Text>
-            <Text style={styles.statValue}>$110 - ${(currentPrice * 1.25).toFixed(2)}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Volume</Text>
-            <Text style={styles.statValue}>14.2M</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Market Cap</Text>
-            <Text style={styles.statValue}>$2.85T</Text>
-          </View>
-        </View>
+        {/* Modular Market Statistics Grid */}
+        <KeyStatisticsGrid
+          baseOpenPrice={baseOpenPrice}
+          currentPrice={currentPrice}
+        />
       </ScrollView>
 
       {/* Floating Bottom Action Bar */}
@@ -228,38 +164,6 @@ const styles = StyleSheet.create({
   },
   timeframeText: { color: '#94a3b8', fontWeight: 'bold', fontSize: 13 },
   timeframeTextActive: { color: '#ffffff' },
-  chartContainer: {
-    backgroundColor: '#141c2e',
-    borderRadius: 16,
-    padding: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#1e293b',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  errorText: { color: '#f43f5e', marginVertical: 40 },
-  sectionHeader: { color: '#f8fafc', fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  statCard: {
-    width: '48%',
-    backgroundColor: '#141c2e',
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#1e293b',
-  },
-  statLabel: { color: '#64748b', fontSize: 11, marginBottom: 4, textTransform: 'uppercase', fontWeight: '600' },
-  statValue: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
   actionBar: {
     position: 'absolute',
     bottom: 0,
