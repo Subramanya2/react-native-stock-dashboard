@@ -133,12 +133,12 @@ export const ConnectionStatusHeader: React.FC<ConnectionStatusHeaderProps> = ({
 const styles = StyleSheet.create({
   statusBar: {
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 14,
+    paddingTop: 12,
+    paddingBottom: 16,
     backgroundColor: '#141c2e',
     borderBottomWidth: 1,
     borderBottomColor: '#1e293b',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   headerTitleRow: {
     flexDirection: 'row',
@@ -160,16 +160,18 @@ const styles = StyleSheet.create({
   },
   reconnectBanner: {
     backgroundColor: '#92400e',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   reconnectText: {
     color: '#fef3c7',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   marketPill: {
     flexDirection: 'row',

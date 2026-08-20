@@ -83,6 +83,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 16,
     right: 16,
+    maxWidth: 500,
+    alignSelf: 'center',
     backgroundColor: '#141c2e',
     borderRadius: 20,
     height: 60,
