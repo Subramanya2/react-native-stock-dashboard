@@ -35,7 +35,9 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
     const baseOpen = liveData?.openingPrice ?? openingPrice;
     const change = liveData?.change ?? (price - baseOpen);
     const percentChange = liveData?.percentChange ?? ((change / baseOpen) * 100);
-    const color = change > 0 ? '#10b981' : change < 0 ? '#ef4444' : '#6b7280';
+    const isGain = change >= 0;
+    const textColor = isGain ? '#10b981' : '#f43f5e';
+    const badgeBg = isGain ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)';
 
     const activeSparkline = liveData?.history?.slice(-20) || (sparklineTicks.length > 0 ? sparklineTicks : [baseOpen, (baseOpen + price) / 2, price]);
 
@@ -48,7 +50,7 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
         if (prevPriceRef.current !== price) {
             const isUp = price > prevPriceRef.current;
             prevPriceRef.current = price;
-            flashColor.value = isUp ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)';
+            flashColor.value = isUp ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)';
             flashOpacity.value = withSequence(
                 withTiming(1, { duration: 150 }),
                 withTiming(0, { duration: 600 })
@@ -77,37 +79,41 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
 
     return (
         <>
-            <TouchableOpacity style={styles.rowWrapper} onPress={handleRowPress} activeOpacity={0.85}>
+            <TouchableOpacity style={styles.cardContainer} onPress={handleRowPress} activeOpacity={0.88}>
                 <Animated.View style={[styles.flashOverlay, animatedStyle]} pointerEvents="none" />
 
                 <View style={styles.row}>
                     <View style={styles.leftContainer}>
-                        <Text style={styles.symbol}>{symbol}</Text>
+                        <View style={styles.symbolBadge}>
+                            <Text style={styles.symbol}>{symbol}</Text>
+                        </View>
                         <View style={styles.actionRow}>
                             <TouchableOpacity
                                 style={[styles.actionBtn, styles.buyBtn]}
                                 onPress={handleBuyPress}
                             >
-                                <Text style={styles.actionBtnText}>Buy</Text>
+                                <Text style={styles.actionBtnText}>+ Buy</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.actionBtn, styles.sellBtn]}
                                 onPress={handleSellPress}
                             >
-                                <Text style={styles.actionBtnText}>Sell</Text>
+                                <Text style={styles.actionBtnText}>- Sell</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
 
                     <View style={styles.sparklineContainer}>
-                        <SparklineChart data={activeSparkline} width={85} height={32} />
+                        <SparklineChart data={activeSparkline} width={90} height={34} />
                     </View>
 
                     <View style={styles.priceContainer}>
-                        <Text style={[styles.price, { color }]}>${price.toFixed(2)}</Text>
-                        <Text style={[styles.change, { backgroundColor: color }]}>
-                            {percentChange >= 0 ? `+${percentChange.toFixed(2)}%` : `${percentChange.toFixed(2)}%`}
-                        </Text>
+                        <Text style={styles.price}>${price.toFixed(2)}</Text>
+                        <View style={[styles.changeBadge, { backgroundColor: badgeBg }]}>
+                            <Text style={[styles.changeText, { color: textColor }]}>
+                                {isGain ? '▲ +' : '▼ '}{Math.abs(percentChange).toFixed(2)}%
+                            </Text>
+                        </View>
                     </View>
                 </View>
             </TouchableOpacity>
@@ -124,10 +130,20 @@ const StockRow = ({ symbol, openingPrice }: StockRowProps) => {
 };
 
 const styles = StyleSheet.create({
-    rowWrapper: {
-        borderBottomWidth: 1,
-        borderBottomColor: '#374151',
+    cardContainer: {
+        backgroundColor: '#141c2e',
+        borderRadius: 14,
+        marginHorizontal: 16,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#1e293b',
+        overflow: 'hidden',
         position: 'relative',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 2,
     },
     flashOverlay: {
         ...StyleSheet.absoluteFillObject,
@@ -136,36 +152,40 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 14,
     },
     leftContainer: {
-        width: 90,
+        width: 100,
+    },
+    symbolBadge: {
+        marginBottom: 4,
     },
     symbol: {
-        fontSize: 17,
+        fontSize: 18,
         fontWeight: 'bold',
-        color: '#fff',
+        color: '#f8fafc',
+        letterSpacing: 0.5,
     },
     actionRow: {
         flexDirection: 'row',
-        marginTop: 6,
-        gap: 4,
+        marginTop: 4,
+        gap: 6,
     },
     actionBtn: {
         paddingHorizontal: 8,
         paddingVertical: 3,
-        borderRadius: 4,
+        borderRadius: 6,
     },
     buyBtn: {
         backgroundColor: '#059669',
     },
     sellBtn: {
-        backgroundColor: '#dc2626',
+        backgroundColor: '#e11d48',
     },
     actionBtnText: {
         color: '#ffffff',
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: 'bold',
     },
     sparklineContainer: {
@@ -176,22 +196,22 @@ const styles = StyleSheet.create({
     },
     priceContainer: {
         alignItems: 'flex-end',
-        minWidth: 80,
+        minWidth: 85,
     },
     price: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#fff',
+        fontSize: 17,
+        fontWeight: '700',
+        color: '#ffffff',
     },
-    change: {
-        fontSize: 12,
-        color: '#fff',
-        fontWeight: 'bold',
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 4,
-        overflow: 'hidden',
+    changeBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 8,
         marginTop: 4,
+    },
+    changeText: {
+        fontSize: 11,
+        fontWeight: 'bold',
     },
 });
 

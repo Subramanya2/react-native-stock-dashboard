@@ -18,7 +18,7 @@ const ConnectionStatus = ({ searchQuery, setSearchQuery }: { searchQuery: string
   const status = useSSEStore((state) => state.status);
   const session = useSSEStore((state) => state.session);
 
-  const statusColor = status === 'connected' ? '#10b981' : '#ef4444';
+  const statusColor = status === 'connected' ? '#10b981' : '#f43f5e';
 
   const getSessionBadge = () => {
     switch (session) {
@@ -44,20 +44,23 @@ const ConnectionStatus = ({ searchQuery, setSearchQuery }: { searchQuery: string
         </View>
       )}
 
-      <View style={styles.topStatusRow}>
-        <View style={styles.statusIndicator}>
-          <View style={[styles.dot, { backgroundColor: statusColor }]} />
-          <Text style={styles.statusText}>Stream: {status.toUpperCase()}</Text>
-        </View>
-
+      <View style={styles.headerTitleRow}>
+        <Text style={styles.headerTitle}>Watchlist</Text>
         <View style={[styles.badgePill, { backgroundColor: badge.color }]}>
           <Text style={styles.badgeText}>{badge.label}</Text>
         </View>
       </View>
 
+      <View style={styles.topStatusRow}>
+        <View style={styles.statusIndicator}>
+          <View style={[styles.dot, { backgroundColor: statusColor }]} />
+          <Text style={styles.statusText}>Live Data Feed: {status.toUpperCase()}</Text>
+        </View>
+      </View>
+
       {/* Session Switcher Pills */}
       <View style={styles.sessionBar}>
-        <Text style={styles.sessionLabel}>Mode:</Text>
+        <Text style={styles.sessionLabel}>Vol Mode:</Text>
         <TouchableOpacity
           style={[styles.sessionChip, session === 'REGULAR_HOURS' && styles.sessionChipActive]}
           onPress={() => handleSessionChange('REGULAR_HOURS')}
@@ -88,8 +91,8 @@ const ConnectionStatus = ({ searchQuery, setSearchQuery }: { searchQuery: string
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="🔍 Search ticker (e.g. AAPL, TSLA)..."
-          placeholderTextColor="#6b7280"
+          placeholder="🔍 Search symbol (e.g. AAPL, TSLA)..."
+          placeholderTextColor="#64748b"
           value={searchQuery}
           onChangeText={setSearchQuery}
           autoCapitalize="characters"
@@ -122,18 +125,20 @@ export default function WatchlistScreen() {
           <Text style={styles.noResultsText}>No stocks match "{searchQuery}"</Text>
         </View>
       ) : (
-        <FlashList
-          data={filteredWatchlist}
-          renderItem={({ item }) => (
-            <StockRow
-              symbol={item.symbol}
-              openingPrice={item.openingPrice}
-            />
-          )}
-          // @ts-ignore
-          estimatedItemSize={60}
-          keyExtractor={(item) => item.symbol}
-        />
+        <View style={styles.listContainer}>
+          <FlashList
+            data={filteredWatchlist}
+            renderItem={({ item }) => (
+              <StockRow
+                symbol={item.symbol}
+                openingPrice={item.openingPrice}
+              />
+            )}
+            // @ts-ignore
+            estimatedItemSize={72}
+            keyExtractor={(item) => item.symbol}
+          />
+        </View>
       )}
     </View>
   );
@@ -142,21 +147,34 @@ export default function WatchlistScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#111827',
+    backgroundColor: '#0b0f17',
   },
   statusBar: {
     paddingHorizontal: 16,
-    paddingTop: 44,
-    paddingBottom: 12,
-    backgroundColor: '#1f2937',
+    paddingTop: 48,
+    paddingBottom: 14,
+    backgroundColor: '#141c2e',
     borderBottomWidth: 1,
-    borderBottomColor: '#374151',
+    borderBottomColor: '#1e293b',
+    marginBottom: 8,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  headerTitle: {
+    color: '#ffffff',
+    fontSize: 26,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
   reconnectBanner: {
     backgroundColor: '#92400e',
-    paddingVertical: 4,
+    paddingVertical: 5,
     paddingHorizontal: 10,
-    borderRadius: 6,
+    borderRadius: 8,
     marginBottom: 8,
     alignItems: 'center',
   },
@@ -182,46 +200,46 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   statusText: {
-    color: '#9ca3af',
-    fontSize: 12,
-    fontWeight: 'bold',
+    color: '#94a3b8',
+    fontSize: 11,
+    fontWeight: '600',
   },
   badgePill: {
     paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 12,
   },
   badgeText: {
     color: '#ffffff',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   sessionBar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   sessionLabel: {
-    color: '#9ca3af',
+    color: '#94a3b8',
     fontSize: 11,
     fontWeight: '600',
     marginRight: 2,
   },
   sessionChip: {
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
-    backgroundColor: '#111827',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#0b0f17',
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: '#1e293b',
   },
   sessionChipActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: '#6366f1',
+    borderColor: '#6366f1',
   },
   sessionChipText: {
-    color: '#9ca3af',
+    color: '#94a3b8',
     fontSize: 10,
   },
   activeChipText: {
@@ -233,31 +251,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   searchInput: {
-    backgroundColor: '#111827',
+    backgroundColor: '#0b0f17',
     color: '#ffffff',
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: 9,
+    borderRadius: 10,
     fontSize: 13,
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: '#1e293b',
   },
   clearBtn: {
     position: 'absolute',
-    right: 10,
+    right: 12,
     padding: 4,
   },
   clearBtnText: {
-    color: '#9ca3af',
+    color: '#94a3b8',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  listContainer: {
+    flex: 1,
+    paddingTop: 4,
   },
   noResultsContainer: {
     padding: 40,
     alignItems: 'center',
   },
   noResultsText: {
-    color: '#9ca3af',
+    color: '#94a3b8',
     fontSize: 14,
     fontStyle: 'italic',
   },

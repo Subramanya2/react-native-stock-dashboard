@@ -7,7 +7,7 @@ import { getStockPriceQueryKey, StockUpdate } from '../../hooks/useMarketData';
 const HOLDING_COLORS: Record<string, string> = {
   Cash: '#10b981',
   AAPL: '#3b82f6',
-  GOOGL: '#ea580c',
+  GOOGL: '#f97316',
   TSLA: '#eab308',
   MSFT: '#8b5cf6',
 };
@@ -85,7 +85,7 @@ export default function PortfolioScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <Text style={styles.title}>My Portfolio</Text>
 
-      {/* Net Worth Summary Card */}
+      {/* Net Worth Hero Card */}
       <View style={styles.netWorthCard}>
         <Text style={styles.balanceLabel}>Total Net Worth</Text>
 
@@ -96,17 +96,19 @@ export default function PortfolioScreen() {
         {/* Prominent All-Time Profit / Loss Indicator */}
         {totalCostBasis > 0 && (
           <View style={styles.pnlRow}>
-            <Text style={[styles.pnlMainText, { color: isOverallPositive ? '#10b981' : '#ef4444' }]}>
-              {isOverallPositive ? '▲ +' : '▼ '}
-              ${Math.abs(totalPnlDollar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({isOverallPositive ? '+' : ''}{totalPnlPercent.toFixed(2)}%)
-            </Text>
-            <Text style={styles.pnlSubLabel}>Total Unrealized Return</Text>
+            <View style={[styles.pnlBadge, { backgroundColor: isOverallPositive ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)' }]}>
+              <Text style={[styles.pnlMainText, { color: isOverallPositive ? '#10b981' : '#f43f5e' }]}>
+                {isOverallPositive ? '▲ +' : '▼ '}
+                ${Math.abs(totalPnlDollar).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({isOverallPositive ? '+' : ''}{totalPnlPercent.toFixed(2)}%)
+              </Text>
+            </View>
+            <Text style={styles.pnlSubLabel}>Unrealized Return</Text>
           </View>
         )}
 
         <View style={styles.subBalanceRow}>
-          <Text style={styles.subBalanceText}>Available Cash: ${cashBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
-          <Text style={styles.subBalanceText}>Total Invested: ${totalCostBasis.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+          <Text style={styles.subBalanceText}>Available Cash: <Text style={styles.highlightVal}>${cashBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text></Text>
+          <Text style={styles.subBalanceText}>Invested: <Text style={styles.highlightVal}>${totalCostBasis.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text></Text>
         </View>
 
         {/* Asset Allocation Multi-Color Bar */}
@@ -118,7 +120,7 @@ export default function PortfolioScreen() {
             return (
               <View
                 key={h.symbol}
-                style={[styles.barSegment, { width: `${pct}%`, backgroundColor: HOLDING_COLORS[h.symbol] || '#6b7280' }]}
+                style={[styles.barSegment, { width: `${pct}%`, backgroundColor: HOLDING_COLORS[h.symbol] || '#64748b' }]}
               />
             );
           })}
@@ -134,7 +136,7 @@ export default function PortfolioScreen() {
             const pct = totalNetWorth > 0 ? (h.currentValue / totalNetWorth) * 100 : 0;
             return (
               <View key={h.symbol} style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: HOLDING_COLORS[h.symbol] || '#6b7280' }]} />
+                <View style={[styles.legendDot, { backgroundColor: HOLDING_COLORS[h.symbol] || '#64748b' }]} />
                 <Text style={styles.legendText}>{h.symbol} ({pct.toFixed(0)}%)</Text>
               </View>
             );
@@ -142,7 +144,7 @@ export default function PortfolioScreen() {
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Holdings & Profit / Loss</Text>
+      <Text style={styles.sectionTitle}>Active Positions</Text>
 
       {holdings.length === 0 && (
         <Text style={styles.emptyText}>No active stock holdings.</Text>
@@ -150,7 +152,8 @@ export default function PortfolioScreen() {
 
       {holdingValuations.map((holding) => {
         const isPos = holding.pnlDollar >= 0;
-        const color = isPos ? '#10b981' : '#ef4444';
+        const textColor = isPos ? '#10b981' : '#f43f5e';
+        const badgeBg = isPos ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)';
 
         return (
           <View key={holding.symbol} style={styles.holdingCard}>
@@ -160,11 +163,10 @@ export default function PortfolioScreen() {
                 <Text style={styles.sharesText}>{holding.shares} Shares</Text>
               </View>
 
-              <View style={styles.pnlBadgeContainer}>
-                <Text style={[styles.pnlBadgeText, { color }]}>
-                  {isPos ? '+' : ''}${holding.pnlDollar.toFixed(2)} ({isPos ? '+' : ''}{holding.pnlPercent.toFixed(2)}%)
+              <View style={[styles.pnlBadgeContainer, { backgroundColor: badgeBg }]}>
+                <Text style={[styles.pnlBadgeText, { color: textColor }]}>
+                  {isPos ? '▲ +' : '▼ '}${Math.abs(holding.pnlDollar).toFixed(2)} ({isPos ? '+' : ''}{holding.pnlPercent.toFixed(2)}%)
                 </Text>
-                <Text style={styles.pnlSubText}>Unrealized P/L</Text>
               </View>
             </View>
 
@@ -193,14 +195,14 @@ export default function PortfolioScreen() {
                 disabled={isPending}
                 onPress={() => executeOrder({ symbol: holding.symbol, type: 'BUY', shares: 1, price: holding.currentPrice })}
               >
-                <Text style={styles.btnText}>+ Buy 1 Share</Text>
+                <Text style={styles.btnText}>+ Buy Share</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.sellBtn]}
                 disabled={isPending}
                 onPress={() => executeOrder({ symbol: holding.symbol, type: 'SELL', shares: 1, price: holding.currentPrice })}
               >
-                <Text style={styles.btnText}>- Sell 1 Share</Text>
+                <Text style={styles.btnText}>- Sell Share</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -211,70 +213,81 @@ export default function PortfolioScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#111827' },
+  container: { flex: 1, backgroundColor: '#0b0f17' },
   contentContainer: { padding: 16 },
   title: { fontSize: 26, fontWeight: 'bold', color: 'white', marginBottom: 16, marginTop: 40 },
   netWorthCard: {
-    backgroundColor: '#1f2937',
-    padding: 16,
-    borderRadius: 14,
+    backgroundColor: '#141c2e',
+    padding: 18,
+    borderRadius: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  balanceLabel: { color: '#9ca3af', fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5 },
-  netWorthValue: { color: '#ffffff', fontSize: 34, fontWeight: 'bold', marginTop: 4 },
-  pnlRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2, marginBottom: 12 },
-  pnlMainText: { fontSize: 16, fontWeight: 'bold' },
-  pnlSubLabel: { color: '#6b7280', fontSize: 11, fontWeight: '500' },
-  subBalanceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, paddingTop: 10, borderTopWidth: 1, borderColor: '#374151' },
-  subBalanceText: { color: '#9ca3af', fontSize: 12 },
-  allocationLabel: { color: '#d1d5db', fontSize: 12, fontWeight: '600', marginBottom: 6 },
+  balanceLabel: { color: '#94a3b8', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: '600' },
+  netWorthValue: { color: '#ffffff', fontSize: 36, fontWeight: 'bold', marginTop: 4 },
+  pnlRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, marginBottom: 14 },
+  pnlBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  pnlMainText: { fontSize: 13, fontWeight: 'bold' },
+  pnlSubLabel: { color: '#64748b', fontSize: 11, fontWeight: '500' },
+  subBalanceRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, paddingTop: 12, borderTopWidth: 1, borderColor: '#1e293b' },
+  subBalanceText: { color: '#94a3b8', fontSize: 12 },
+  highlightVal: { color: '#f8fafc', fontWeight: 'bold' },
+  allocationLabel: { color: '#cbd5e1', fontSize: 12, fontWeight: '600', marginBottom: 6 },
   allocationBar: {
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#374151',
+    backgroundColor: '#1e293b',
     flexDirection: 'row',
     overflow: 'hidden',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   barSegment: { height: '100%' },
-  legendRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  legendRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { color: '#9ca3af', fontSize: 11 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#e5e7eb', marginBottom: 12 },
-  emptyText: { color: '#9ca3af', fontStyle: 'italic', marginVertical: 12 },
+  legendText: { color: '#94a3b8', fontSize: 11 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#f1f5f9', marginBottom: 12 },
+  emptyText: { color: '#94a3b8', fontStyle: 'italic', marginVertical: 12 },
   holdingCard: {
-    backgroundColor: '#1f2937',
-    padding: 14,
-    borderRadius: 12,
+    backgroundColor: '#141c2e',
+    padding: 16,
+    borderRadius: 14,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#374151',
+    borderColor: '#1e293b',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   holdingTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  symbolText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
-  sharesText: { color: '#9ca3af', fontSize: 12, marginTop: 2 },
-  pnlBadgeContainer: { alignItems: 'flex-end' },
-  pnlBadgeText: { fontSize: 15, fontWeight: 'bold' },
-  pnlSubText: { color: '#6b7280', fontSize: 10, marginTop: 1 },
+  symbolText: { color: '#ffffff', fontSize: 18, fontWeight: 'bold', letterSpacing: 0.5 },
+  sharesText: { color: '#94a3b8', fontSize: 12, marginTop: 2 },
+  pnlBadgeContainer: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  pnlBadgeText: { fontSize: 13, fontWeight: 'bold' },
   holdingDetailsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#374151',
-    marginBottom: 10,
+    borderColor: '#1e293b',
+    marginBottom: 12,
   },
   detailCol: { alignItems: 'center' },
-  detailLabel: { color: '#9ca3af', fontSize: 10, marginBottom: 2 },
-  detailValue: { color: '#ffffff', fontSize: 12, fontWeight: '600' },
+  detailLabel: { color: '#64748b', fontSize: 10, marginBottom: 2, textTransform: 'uppercase', fontWeight: '600' },
+  detailValue: { color: '#f8fafc', fontSize: 12, fontWeight: '600' },
   holdingActionRow: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
   actionBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6 },
   buyBtn: { backgroundColor: '#059669' },
-  sellBtn: { backgroundColor: '#dc2626' },
+  sellBtn: { backgroundColor: '#e11d48' },
   btnText: { color: 'white', fontWeight: 'bold', fontSize: 11 },
   text: { color: 'white', fontSize: 16 },
 });
