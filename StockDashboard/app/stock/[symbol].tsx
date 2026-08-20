@@ -46,10 +46,10 @@ export default function StockDetailScreen() {
     }
   }, [rawHistory, timeframe]);
 
-  const currentPrice = liveData?.price ?? (rawHistory.length ? rawHistory[0].price : 150.0);
-  const openingPrice = rawHistory.length ? rawHistory[rawHistory.length - 1].price : currentPrice;
-  const priceChange = currentPrice - openingPrice;
-  const percentChange = (priceChange / openingPrice) * 100;
+  const currentPrice = liveData?.price ?? (rawHistory.length ? rawHistory[rawHistory.length - 1].price : 150.0);
+  const baseOpenPrice = liveData?.openingPrice ?? (rawHistory.length ? rawHistory[0].price : currentPrice);
+  const priceChange = liveData?.change ?? (currentPrice - baseOpenPrice);
+  const percentChange = liveData?.percentChange ?? (baseOpenPrice ? (priceChange / baseOpenPrice) * 100 : 0);
   const isPositive = priceChange >= 0;
   const themeColor = isPositive ? '#10b981' : '#ef4444';
 
@@ -150,7 +150,7 @@ export default function StockDetailScreen() {
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Open Price</Text>
-            <Text style={styles.statValue}>${openingPrice.toFixed(2)}</Text>
+            <Text style={styles.statValue}>${baseOpenPrice.toFixed(2)}</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Day High</Text>
