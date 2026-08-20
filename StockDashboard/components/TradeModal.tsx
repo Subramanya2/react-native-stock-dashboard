@@ -162,7 +162,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
               <ActivityIndicator color="#fff" />
             ) : (
               <Text style={styles.submitBtnText}>
-                Confirm {type} {shares} {shares === 1 ? 'Share' : 'Shares'}
+                {type === 'BUY' ? 'Place Buy Order' : 'Place Sell Order'}
               </Text>
             )}
           </TouchableOpacity>

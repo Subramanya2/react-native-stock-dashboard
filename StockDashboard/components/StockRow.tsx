@@ -129,13 +129,13 @@ const StockRow = ({ symbol, name, openingPrice, brandColor }: StockRowProps) => 
 
                 {/* Bottom Section: Action Buttons */}
                 <View style={styles.cardFooter}>
-                    <Text style={styles.tapDetailText}>Tap card for detailed chart ↗</Text>
+                    <Text style={styles.tapDetailText}>Tap for detailed chart ↗</Text>
                     <View style={styles.actionBtnGroup}>
                         <TouchableOpacity style={[styles.actionBtn, styles.buyBtn]} onPress={handleBuyPress}>
-                            <Text style={styles.buyBtnText}>+ Buy</Text>
+                            <Text style={styles.buyBtnText}>Buy</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.actionBtn, styles.sellBtn]} onPress={handleSellPress}>
-                            <Text style={styles.sellBtnText}>- Sell</Text>
+                            <Text style={styles.sellBtnText}>Sell</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

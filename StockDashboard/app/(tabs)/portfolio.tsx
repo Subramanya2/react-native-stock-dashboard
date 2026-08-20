@@ -197,14 +197,14 @@ export default function PortfolioScreen() {
                 disabled={isPending}
                 onPress={() => executeOrder({ symbol: holding.symbol, type: 'BUY', shares: 1, price: holding.currentPrice })}
               >
-                <Text style={styles.btnText}>+ Buy Share</Text>
+                <Text style={styles.btnText}>Buy More</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.sellBtn]}
                 disabled={isPending}
                 onPress={() => executeOrder({ symbol: holding.symbol, type: 'SELL', shares: 1, price: holding.currentPrice })}
               >
-                <Text style={styles.btnText}>- Sell Share</Text>
+                <Text style={styles.btnText}>Sell</Text>
               </TouchableOpacity>
             </View>
           </View>

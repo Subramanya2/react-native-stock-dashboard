@@ -184,10 +184,10 @@ export default function StockDetailScreen() {
       {/* Floating Bottom Action Bar */}
       <View style={[styles.actionBar, { paddingBottom: Math.max(14, insets.bottom) }]}>
         <TouchableOpacity style={[styles.actionBtn, styles.buyBtn]} onPress={() => openTradeModal('BUY')}>
-          <Text style={styles.btnText}>Trade BUY</Text>
+          <Text style={styles.btnText}>Buy Shares</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.actionBtn, styles.sellBtn]} onPress={() => openTradeModal('SELL')}>
-          <Text style={styles.btnText}>Trade SELL</Text>
+          <Text style={styles.btnText}>Sell Shares</Text>
         </TouchableOpacity>
       </View>
 
