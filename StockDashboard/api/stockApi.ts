@@ -2,6 +2,11 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 export const getApiBaseUrl = (): string => {
+    // 0. Production / Environment Override (Vercel, Render, EAS Builds)
+    if (process.env.EXPO_PUBLIC_API_URL) {
+        return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, '');
+    }
+
     // 1. Web environment: match active browser hostname on port 8080
     if (Platform.OS === 'web') {
         const hostname = typeof window !== 'undefined' && window.location?.hostname ? window.location.hostname : 'localhost';

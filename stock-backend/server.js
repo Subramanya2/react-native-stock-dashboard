@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
@@ -183,6 +183,6 @@ app.post('/api/order', (req, res) => {
     });
 });
 
-app.listen(port, () => {
-    console.log(`Mock Stock API server running at http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Finora Stock API server running on port ${port}`);
 });
