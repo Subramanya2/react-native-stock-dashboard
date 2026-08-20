@@ -1,53 +1,40 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# -----------------
-# Project-Specific
-# -----------------
-
 # Backend dependencies
 stock-backend/node_modules/
 
 # Frontend dependencies
 StockDashboard/node_modules/
 
-# Expo
+# Expo & Web builds
 StockDashboard/.expo/
 StockDashboard/dist/
 StockDashboard/web-build/
 StockDashboard/expo-env.d.ts
 
-# Metro
-StockDashboard/.metro-health-check*
+# Local cache & CLI build artifacts
+.eas/
+.vercel/
+StockDashboard/.vercel/
+StockDashboard/.eas/
 
-# Generated native folders
+# Environment Variables & Secrets (Keep local secrets safe!)
+.env
+.env.*
+!.env.example
+.env*.local
+
+# Metro & Logs
+StockDashboard/.metro-health-check*
+*.log
+npm-debug.*
+yarn-debug.*
+
+# Native keys & credentials
 StockDashboard/ios/
 StockDashboard/android/
-
-# -----------------
-# General
-# -----------------
-
-# Native
-StockDashboard/.kotlin/
-*.orig.*
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
 *.pem
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-*.log
-
-# macOS
 .DS_Store
-
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
