@@ -9,6 +9,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
+import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { Platform } from 'react-native';
 
@@ -96,6 +97,7 @@ function AppContent() {
 
   return (
     <ThemeProvider value={customDarkTheme}>
+      <StatusBar style="light" animated translucent backgroundColor="transparent" />
       <ToastNotification />
       <Stack
         screenOptions={{

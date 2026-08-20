@@ -133,9 +133,9 @@ export const ConnectionStatusHeader: React.FC<ConnectionStatusHeaderProps> = ({
 const styles = StyleSheet.create({
   statusBar: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 16,
-    backgroundColor: '#141c2e',
+    backgroundColor: '#0b0f17',
     borderBottomWidth: 1,
     borderBottomColor: '#1e293b',
     marginBottom: 16,
