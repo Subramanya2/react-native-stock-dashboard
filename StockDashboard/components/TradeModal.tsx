@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { useOrderExecution } from '../hooks/useOrderExecution';
 
@@ -26,6 +26,14 @@ export const TradeModal: React.FC<TradeModalProps> = ({
 
   const { mutate: executeOrder, isPending } = useOrderExecution();
 
+  useEffect(() => {
+    if (visible) {
+      setType(initialType);
+      setLimitPriceText(currentPrice.toFixed(2));
+      setNotice(null);
+    }
+  }, [visible, initialType, currentPrice]);
+
   const shares = Math.max(1, parseInt(sharesText, 10) || 1);
   const priceToUse = orderStyle === 'LIMIT' ? (parseFloat(limitPriceText) || currentPrice) : currentPrice;
   const totalCost = shares * priceToUse;
@@ -52,7 +60,11 @@ export const TradeModal: React.FC<TradeModalProps> = ({
           }, 1200);
         },
         onError: (err: any) => {
-          setNotice(`❌ Trade failed: ${err.message}. Portfolio rolled back.`);
+          setNotice(`❌ Trade failed: ${err.message}. Returning to market...`);
+          setTimeout(() => {
+            setNotice(null);
+            onClose();
+          }, 1500);
         },
       }
     );
