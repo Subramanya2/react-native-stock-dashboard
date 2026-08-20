@@ -1,7 +1,9 @@
 import { useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { EventSource } from 'eventsource';
 import { useSSEStore } from '../store/useSSEStore';
+import { CustomEventSource } from '../services/eventSource';
+
+import { getApiBaseUrl } from '../api/stockApi';
 
 // Define the shape of our real-time data
 export interface StockUpdate {
@@ -12,13 +14,12 @@ export interface StockUpdate {
 
 // Define the query key for a single stock's live price
 export const getStockPriceQueryKey = (symbol: string) => ['stock-price', symbol];
-
-const SSE_URL = 'http://localhost:8080/sse/stocks';
+export const getStockSparklineQueryKey = (symbol: string) => ['stock-sparkline', symbol];
 
 export const useMarketData = () => {
     const queryClient = useQueryClient();
     const { setStatus } = useSSEStore.getState();
-    const eventSourceRef = useRef<EventSource | null>(null);
+    const eventSourceRef = useRef<CustomEventSource | null>(null);
     const reconnectAttempt = useRef(0);
     const maxReconnectDelay = 30000; // 30 seconds
 
@@ -28,7 +29,8 @@ export const useMarketData = () => {
         }
 
         setStatus('connecting');
-        const es = new EventSource(SSE_URL);
+        const sseUrl = `${getApiBaseUrl()}/sse/stocks`;
+        const es = new CustomEventSource(sseUrl);
         eventSourceRef.current = es;
 
         es.onopen = () => {
@@ -43,20 +45,26 @@ export const useMarketData = () => {
                 const update = JSON.parse(event.data) as StockUpdate;
 
                 // 1. Update the 'live price' query data directly.
-                // Any component using useQuery(getStockPriceQueryKey(update.symbol)) will re-render.
                 queryClient.setQueryData(
                     getStockPriceQueryKey(update.symbol),
                     update
                 );
 
-                // 2. Intelligently invalidate related queries (stale-while-revalidate)
-                // This marks 'stock-history' as stale. The next time a user
-                // views it, it will refetch in the background.
+                // 2. Maintain a sliding window array (max 20 data points) for sparkline
+                queryClient.setQueryData<number[]>(
+                    getStockSparklineQueryKey(update.symbol),
+                    (old = []) => {
+                        const updated = [...old, update.price];
+                        return updated.slice(-20);
+                    }
+                );
+
+                // 3. Intelligently invalidate related queries (stale-while-revalidate)
                 queryClient.invalidateQueries({
                     queryKey: ['stock-history', update.symbol],
                 });
 
-                // 3. Invalidate portfolio (in case it holds this stock)
+                // 4. Invalidate portfolio
                 queryClient.invalidateQueries({
                     queryKey: ['portfolio'],
                 });
@@ -72,7 +80,7 @@ export const useMarketData = () => {
     };
 
     const handleReconnect = () => {
-        if (eventSourceRef.current?.readyState === EventSource.OPEN) {
+        if (eventSourceRef.current?.readyState === 1) {
             return;
         }
 
