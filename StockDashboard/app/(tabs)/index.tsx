@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
@@ -114,23 +114,35 @@ const ConnectionStatus = ({ searchQuery, setSearchQuery }: { searchQuery: string
 
 export default function WatchlistScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  // 200ms Debounce hook for smooth keyboard input & performance optimization
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 200);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
 
   const filteredWatchlist = useMemo(() => {
-    if (!searchQuery.trim()) return WATCHLIST;
-    const query = searchQuery.trim().toLowerCase();
+    if (!debouncedQuery.trim()) return WATCHLIST;
+    const query = debouncedQuery.trim().toLowerCase();
     return WATCHLIST.filter(
       (item) =>
         item.symbol.toLowerCase().includes(query) ||
         item.name.toLowerCase().includes(query)
     );
-  }, [searchQuery]);
+  }, [debouncedQuery]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ConnectionStatus searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       {filteredWatchlist.length === 0 ? (
         <View style={styles.noResultsContainer}>
-          <Text style={styles.noResultsText}>No stocks match "{searchQuery}"</Text>
+          <Text style={styles.noResultsText}>No stocks match "{debouncedQuery}"</Text>
         </View>
       ) : (
         <View style={styles.listContainer}>
