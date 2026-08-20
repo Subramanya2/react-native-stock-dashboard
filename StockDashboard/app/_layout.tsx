@@ -88,6 +88,7 @@ function AppContent() {
   useEffectOnce(() => {
     setupSSE();
     if (Platform.OS === 'android') {
+      NavigationBar.setBackgroundColorAsync('#0b0f17').catch(() => {});
       NavigationBar.setButtonStyleAsync('light').catch(() => {});
     }
     return () => {
